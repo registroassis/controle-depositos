@@ -472,6 +472,12 @@ table.t th { font-size: 12px; }
         similaridadeMinima: 0.6,      // para apontar possível correspondência sem código
         sugerirSolicitante: true,
         lembreteBackupDias: 7,
+        // protocolos que já significam "utilizado" (não passam por Aguardando utilização)
+        protocolosUtilizados: [
+          { inicio: 'MOVIMENTO DO DIA', rotulo: 'Depósito de caixa diário' },
+          { inicio: 'REPASSE DA PARCELA EXPRESS', rotulo: 'Repasse diário da parcela Express' },
+          { inicio: 'DEVOLUCAO', rotulo: 'Devolução' },
+        ],
       },
       conferentePadrao: '',
       conferentes: [],
@@ -957,6 +963,14 @@ table.t th { font-size: 12px; }
     return Object.assign({}, cl, { status: 'pendente', motivo: 'Pendente de confirmação', alerta: (cl.status === 'duplicidade' ? 'Possível duplicidade: ' : 'Atenção: ') + cl.motivo });
   }
 
+  /** Protocolo que já indica utilização (caixa diário, repasse Express, devolução). Retorna o rótulo da regra ou null. */
+  function regraProtocolo(protocolo, regras) {
+    const p = norm(protocolo || ''); if (!p) return null;
+    const lista = (regras && regras.protocolosUtilizados) || configPadrao().regras.protocolosUtilizados;
+    for (const r of lista) if (r && r.inicio && p.startsWith(norm(r.inicio))) return r.rotulo || r.inicio;
+    return null;
+  }
+
   function sugerirSolicitante(c, hist) {
     if (!hist || !hist.linhas.length) return null;
     const rk = nameTokens(c.remetente).slice(0, 3).join(' ');
@@ -1411,6 +1425,7 @@ table.t th { font-size: 12px; }
             if (falt.length) throw new Error('Faltam campos para ' + (c.remetente || 'crédito') + ' (' + formatBRL(c.valor) + '): ' + falt.join(', '));
             if (c.status !== 'utilizado') { c.status = 'lancado'; c.motivo = 'Conferido na importação; aguardando utilização' + (c.lancamento.protocolo ? ' (protocolo ' + c.lancamento.protocolo + ')' : ''); }
             c.lancamento.confirmadoEm = ts; c.lancamento.confirmadoPor = this.usuario.rotulo || ''; c.decisaoManual = true;
+            this._autoUtilizar(c);
             c.evidencia = c.evidencia && c.evidencia.fonte === 'planilha' ? c.evidencia : { fonte: 'app', descricao: 'Conferido na importação em ' + fmtData(this.hoje()) + ' por ' + (this.usuario.rotulo || 'usuário') };
           }
           this._salvarCredito(c); ids.push(c.id);
@@ -1488,7 +1503,8 @@ table.t th { font-size: 12px; }
         const k = (ocorr.get(chave) || 0) + 1; ocorr.set(chave, k);
         const fp = chave + '#' + k;
         const ck = chaveLinhaPlanilha(l);
-        const st = statusDaCor(l.f, regras);
+        let st = statusDaCor(l.f, regras);
+        if (st === 'lancado' && regraProtocolo(l.p, regras)) st = 'utilizado';
         const ev = { fonte: 'planilha', linha: l.n, chave: ck, cor: l.f || '' };
         const lanc = { identificacao: l.i, protocolo: l.p || '', solicitante: l.s || '', dataConferencia: l.dc || '', conferente: l.c || '', comentario: l.o || '' };
         const motivo = 'Linha ' + l.n + ' ' + (l.f ? 'pintada (' + nomeCor(l.f) + ')' : 'sem cor');
@@ -1541,6 +1557,25 @@ table.t th { font-size: 12px; }
       return alterados.length;
     }
     reprocessar() { return this.transacao(async () => this._reprocessar('Reclassificação solicitada')); }
+    /** Se o protocolo indica utilização automática, marca o crédito como utilizado (sem salvar). Retorna true se mudou. */
+    _autoUtilizar(c) {
+      if (c.status !== 'lancado') return false;
+      const regra = regraProtocolo(c.lancamento && c.lancamento.protocolo, this.config.regras);
+      if (!regra) return false;
+      c.status = 'utilizado'; c.decisaoManual = true;
+      c.motivo = 'Utilizado automaticamente: ' + regra + ' (protocolo "' + c.lancamento.protocolo + '")';
+      c.lancamento.utilizadoPor = this.usuario.rotulo || 'automático'; c.lancamento.utilizadoEm = this.ts(); c.lancamento.regra = regra;
+      return true;
+    }
+    /** Aplica a regra de protocolos aos créditos que estão aguardando utilização. */
+    aplicarRegrasProtocolo() {
+      const alvo = this.creditos.todos().filter((c) => c.status === 'lancado' && regraProtocolo(c.lancamento && c.lancamento.protocolo, this.config.regras));
+      if (!alvo.length) return Promise.resolve(0);
+      return this.transacao(async () => {
+        for (const c0 of alvo) { const c = clone(c0); if (this._autoUtilizar(c)) { this._salvarCredito(c); this._evento({ tipo: 'status', creditoId: c.id, de: 'lancado', para: 'utilizado', motivo: c.motivo, automatico: true }); } }
+        return alvo.length;
+      });
+    }
     /** Move para os pendentes (com alerta) os créditos que estavam em conferência ou duplicidade. */
     migrarConferencias() {
       const alvo = this.creditos.todos().filter((c) => c.status === 'conferencia' || c.status === 'duplicidade');
@@ -1578,8 +1613,10 @@ table.t th { font-size: 12px; }
         }
         if (!Object.keys(dif).length) return c;
         if (dif.referencia || dif.valor || dif.data || dif.remetente) { c.chave = chaveCredito(c); }
+        const virou = dif['lancamento.protocolo'] && this._autoUtilizar(c);
         this._salvarCredito(c);
         this._evento({ tipo: 'edicao', creditoId: id, campos: dif, motivo: motivo || 'Edição manual' });
+        if (virou) this._evento({ tipo: 'status', creditoId: id, de: 'lancado', para: 'utilizado', motivo: c.motivo, automatico: true });
         return c;
       });
     }
@@ -1643,6 +1680,7 @@ table.t th { font-size: 12px; }
           c.status = 'lancado';
           c.lancamento.confirmadoEm = this.ts(); c.lancamento.confirmadoPor = this.usuario.rotulo || ''; c.decisaoManual = true; c.alerta = null;
           c.motivo = 'Conferido e lançado no aplicativo; aguardando utilização' + (c.lancamento.protocolo ? ' (protocolo ' + c.lancamento.protocolo + ')' : '');
+          this._autoUtilizar(c);
           c.evidencia = c.evidencia && c.evidencia.fonte === 'planilha' ? c.evidencia : { fonte: 'app', descricao: 'Lançamento confirmado no aplicativo em ' + fmtData(this.hoje()) + ' por ' + (this.usuario.rotulo || 'usuário') + (c.lancamento.protocolo ? ', protocolo ' + c.lancamento.protocolo : ''), protocolo: c.lancamento.protocolo || null };
           this._salvarCredito(c);
           this._evento({ tipo: 'lancamento', creditoId: id, de, para: c.status, motivo: c.motivo, detalhe: { lancamento: Object.assign({}, c.lancamento, { sugestoes: undefined }) } });
@@ -1886,7 +1924,7 @@ table.t th { font-size: 12px; }
 
   const Core = {
     APP_NOME, APP_VERSAO, BACKUP_FORMATO, BACKUP_VERSAO, STATUS, CAMPOS, ROTULO_EVENTO,
-    sugerirSolicitante, simplificar, corDaCelula, statusDaCor, nomeCor, descEvidencia, chaveLinhaPlanilha,
+    regraProtocolo, sugerirSolicitante, simplificar, corDaCelula, statusDaCor, nomeCor, descEvidencia, chaveLinhaPlanilha,
     util: { norm, up, normRef, similaridade, parseMoneyBR, formatBRL, parseDateBR, excelSerialToISO, fmtData, hojeISO, diasEntre, uid, estavel, sha256, sha256js, clone },
     interpretarExtrato, celulasParaTexto, ofxParaTexto, extrairIdentificacao, lerPlanilha, indexarHistorico, chaveCredito, classificar, identificacaoPadrao, autoMapear,
     configPadrao, mesclarConfig, valorCampo, linhasPlanilha, paraCSV, tabelaCreditos, tabelaEventos, gerarXLSX,
@@ -2140,7 +2178,7 @@ table.t th { font-size: 12px; }
     valor: { id: 'valor', rot: 'Valor', cls: 'r', val: (c) => c.valor, html: (c) => '<span class="num">' + brl(c.valor) + '</span>' },
     status: { id: 'status', rot: 'Situação', val: (c) => c.status, html: (c) => pill(c.status) + (c._orfao ? ' <span class="tag err">importação interrompida</span>' : '') },
     motivo: { id: 'motivo', rot: 'Motivo da classificação', html: (c) => '<div class="motivo clip" title="' + esc(c.motivo) + '">' + esc(c.motivo) + '</div>' },
-    prot: { id: 'prot', rot: 'Protocolo', val: (c) => (c.lancamento && c.lancamento.protocolo) || '', html: (c) => '<span class="num">' + esc((c.lancamento && c.lancamento.protocolo) || '—') + '</span>' },
+    prot: { id: 'prot', rot: 'Protocolo', val: (c) => (c.lancamento && c.lancamento.protocolo) || '', html: (c) => '<span class="num">' + esc((c.lancamento && c.lancamento.protocolo) || '—') + '</span>' + (C.regraProtocolo(c.lancamento && c.lancamento.protocolo, repo.config.regras) ? '<div><span class="tag">' + esc(C.regraProtocolo(c.lancamento.protocolo, repo.config.regras)) + '</span></div>' : '') },
     solic: { id: 'solic', rot: 'Solicitante', val: (c) => (c.lancamento && c.lancamento.solicitante) || '', html: (c) => esc((c.lancamento && c.lancamento.solicitante) || '—') },
     evid: { id: 'evid', rot: 'Evidência', html: (c) => '<div class="motivo clip">' + esc(C.descEvidencia(c) || '—') + '</div>' },
     exp: { id: 'exp', rot: 'Exportado', val: (c) => (c.exportacoes && c.exportacoes.length ? c.exportacoes[c.exportacoes.length - 1].em : ''), html: (c) => (c.exportacoes && c.exportacoes.length ? '<span class="num small">' + dtHora(c.exportacoes[c.exportacoes.length - 1].em) + '</span>' : '<span class="muted small">não</span>') },
@@ -2942,7 +2980,7 @@ table.t th { font-size: 12px; }
     if (t.dataset.ed) {
       const id = t.dataset.id, campo = t.dataset.ed; let v = t.value.trim(); if (campo === 'solicitante') v = v.toUpperCase();
       const c = repo.creditos.get(id); if (!c || ((c.lancamento && c.lancamento[campo]) || '') === v) return;
-      await agir(() => repo.editar(id, { ['lancamento.' + campo]: v }, c.status === 'pendente' ? 'Preenchimento para lançamento' : (campo === 'protocolo' ? 'Protocolo incluído após a conferência' : 'Campo alterado após a conferência')), campo === 'protocolo' && c.status !== 'pendente' ? 'Protocolo ' + (v || '(vazio)') + ' salvo. O crédito continua aguardando utilização.' : null);
+      await agir(() => repo.editar(id, { ['lancamento.' + campo]: v }, c.status === 'pendente' ? 'Preenchimento para lançamento' : (campo === 'protocolo' ? 'Protocolo incluído após a conferência' : 'Campo alterado após a conferência')), campo === 'protocolo' && c.status !== 'pendente' ? () => (repo.creditos.get(id).status === 'utilizado' && c.status !== 'utilizado' ? 'Protocolo "' + v + '" é de ' + (repo.creditos.get(id).lancamento.regra || 'uso automático').toLowerCase() + ': crédito movido para Utilizados / conciliados.' : 'Protocolo ' + (v || '(vazio)') + ' salvo. O crédito continua aguardando utilização.') : null);
       return;
     }
     if (t.dataset.impc === 'incluir') { ui.impCampos[t.dataset.linha].incluir = t.checked; const tr = t.closest('tr'); if (tr) tr.style.opacity = t.checked ? '' : '.55'; atualizarRodapeImport(); return; }
@@ -3053,6 +3091,7 @@ table.t th { font-size: 12px; }
     if (store.assinarDoc) ['config', 'planilha', 'indice'].forEach((id) => store.assinarDoc('meta', id, (d) => aoMeta(id, d), onErr));
     else if (store.assinar) store.assinar('meta', (docs) => docs.forEach((d) => aoMeta(d.id, d.data)), onErr);
     if (podeEscrever !== false && repo.creditos.todos().some((c) => c.status === 'conferencia' || c.status === 'duplicidade')) { try { await repo.migrarConferencias(); } catch (e) { console.warn('migração', e); } }
+    if (podeEscrever !== false) { try { await repo.aplicarRegrasProtocolo(); } catch (e) { console.warn('regras de protocolo', e); } }
     rotear();
     return true;
   }
