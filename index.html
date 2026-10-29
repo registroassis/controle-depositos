@@ -570,9 +570,16 @@ table.t th { font-size: 12px; }
     rem = rem.replace(/^[\s|]+/, '').replace(/[\s\-–:;,|]+$/, '').trim();
     tipo = tipo.replace(/[\s\-–:;,|]+$/, '').trim();
     if (!nat) {
-      const T = norm(tipo || desc);
-      if (KW_DEBITO.test(T) && !KW_CREDITO.test(T)) nat = 'D';
-      else if (KW_CREDITO.test(T)) nat = 'C';
+      if (tipo) {
+        const T = norm(tipo);
+        if (KW_DEBITO.test(T) && !KW_CREDITO.test(T)) nat = 'D';
+        else if (KW_CREDITO.test(T)) nat = 'C';
+      } else {
+        // sem tipo identificado: só considera débito quando a descrição COMEÇA com um termo de débito
+        // (o nome do remetente pode conter palavras como "PAGAMENTOS", ex.: GIRO PAGAMENTOS E TEC)
+        const T = norm(desc);
+        if (/^(TARIFA|PAGTO|PAGAMENTO DE|DEBITO|SAQUE|IOF|JUROS|APLICACAO|APLIC|CHEQUE COMP|ENCARGO|CESTA|TITULO DE CAP|GASTOS CARTAO|PIX ENVIADO|TED ENVIADA|TRANSF ENVIADA|ENVIO|RESGATE)/.test(T)) nat = 'D';
+      }
     }
     return { tipo, remetente: rem, nat };
   }
@@ -2288,7 +2295,7 @@ table.t th { font-size: 12px; }
       }
       h += '</tbody></table></div>';
       if (p.invalidas.length) h += '<div class="body"><h2 style="font-size:14px;margin:0 0 8px">Linhas inválidas ou incompletas (não serão importadas)</h2><div class="tw"><table class="t"><thead><tr><th>Linha</th><th>Conteúdo</th><th>Problema</th></tr></thead><tbody>' + p.invalidas.map((x) => '<tr><td class="num">' + x.linha + '</td><td class="mono">' + esc(x.bruto) + '</td><td><span class="tag err">' + esc(x.motivo) + '</span></td></tr>').join('') + '</tbody></table></div></div>';
-      if (p.ignoradas.length) h += '<details class="body"><summary class="small">' + p.ignoradas.length + ' linha(s) ignorada(s): débitos, saldos e cabeçalhos</summary><div class="tw" style="margin-top:8px"><table class="t"><tbody>' + p.ignoradas.slice(0, 300).map((x) => '<tr><td class="num">' + x.linha + '</td><td class="mono">' + esc(x.bruto) + '</td><td class="small muted">' + esc(x.motivo) + '</td></tr>').join('') + '</tbody></table></div></details>';
+      if (p.ignoradas.length) h += '<details class="body"' + (novos.length ? '' : ' open') + '><summary class="small">' + p.ignoradas.length + ' linha(s) ignorada(s): débitos, saldos e cabeçalhos</summary><div class="tw" style="margin-top:8px"><table class="t"><tbody>' + p.ignoradas.slice(0, 300).map((x) => '<tr><td class="num">' + x.linha + '</td><td class="mono">' + esc(x.bruto) + '</td><td class="small muted">' + esc(x.motivo) + '</td></tr>').join('') + '</tbody></table></div></details>';
       h += '<div class="pag" style="border-top:1px solid var(--line-2)"><span id="imp-rodape"></span><span class="row"><span class="small muted">Conferente: <b>' + esc(repo.usuario.rotulo || '—') + '</b> · ' + esc(dt(repo.hoje())) + '</span><button class="btn pri" id="bt-imp-conf" data-act="imp-confirmar">Conferir</button></span></div></div>';
     } else {
       h += '<div class="panel" style="margin-top:14px"><header><h2>Formatos aceitos</h2></header><div class="body doc small"><ul style="margin:0;padding-left:18px">' +
