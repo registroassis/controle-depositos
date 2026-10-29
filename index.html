@@ -7,17 +7,17 @@
 <title>Controle de Depósitos</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Libre+Caslon+Text:wght@400;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&family=Libre+Caslon+Text:wght@400;700&display=swap">
 <style>
 /* Layout: livro-razão — menu lateral azul-marinho com filete dourado, área de trabalho clara em colunas tabulares */
 :root {
   --bg: #f3f4f7; --surface: #ffffff; --surface-2: #f8f9fb; --ink: #17213a; --muted: #5d667a; --line: #dde1e9; --line-2: #eceef3;
-  --navy: #1b2a4a; --navy-2: #24365d; --navy-ink: #e9edf5; --navy-muted: #a9b4c9;
+  --navy: #0f2347; --navy-2: #1d4486; --navy-ink: #e9edf5; --navy-muted: #a9b4c9;
   --gold: #b8963e; --gold-soft: #f6efdd; --gold-ink: #6e5718; --focus: #3d6fd6;
   --pend-bg: #fdf1dc; --pend-fg: #7a4b05; --lanc-bg: #e4eefc; --lanc-fg: #1c4a8c; --util-bg: #e2f3e8; --util-fg: #1d5e35;
   --dup-bg: #efe7fb; --dup-fg: #563092; --conf-bg: #fde6e3; --conf-fg: #8d2a1d; --arq-bg: #eceef2; --arq-fg: #4a5163;
   --danger: #b4321f; --ok: #1f7a43;
-  --f-ui: "Public Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --f-ui: "Plus Jakarta Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
   --f-num: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
   --f-brand: "Libre Caslon Text", Georgia, "Times New Roman", serif;
   --r: 6px; --shadow: 0 1px 2px rgba(23,33,58,.06), 0 4px 14px rgba(23,33,58,.05);
@@ -45,7 +45,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 a { color: var(--focus); }
 :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .num, .mono { font-family: var(--f-num); font-variant-numeric: tabular-nums; font-size: 12.5px; }
-.app { display: grid; grid-template-columns: 236px minmax(0, 1fr); min-height: 100%; }
+.app { display: grid; grid-template-columns: 276px minmax(0, 1fr); min-height: 100%; }
 /* menu lateral */
 .side { background: var(--navy); color: var(--navy-ink); position: sticky; top: env(safe-area-inset-top, 0px); height: calc(100vh - env(safe-area-inset-top, 0px)); overflow-y: auto; display: flex; flex-direction: column; border-right: 3px solid var(--gold); padding-left: env(safe-area-inset-left, 0px); }
 .brand { padding: 20px 18px 16px; border-bottom: 1px solid rgba(255,255,255,.08); }
@@ -176,7 +176,7 @@ pre.raw { background: var(--surface-2); border: 1px solid var(--line-2); padding
 @media (max-width: 1100px) { .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } .grid3 { grid-template-columns: minmax(0,1fr); } }
 @media (max-width: 860px) {
   .app { grid-template-columns: minmax(0, 1fr); }
-  .side { position: fixed; inset: 0 auto 0 0; width: 260px; height: 100%; transform: translateX(-105%); transition: transform .2s; z-index: 40; padding-top: env(safe-area-inset-top, 0px); }
+  .side { position: fixed; inset: 0 auto 0 0; width: 280px; height: 100%; transform: translateX(-105%); transition: transform .2s; z-index: 40; padding-top: env(safe-area-inset-top, 0px); }
   .side.open { transform: none; }
   .topbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: var(--navy); color: #fff; padding-block: 10px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); border-bottom: 2px solid var(--gold); }
   .topbar b { font-family: var(--f-brand); font-size: 16px; }
@@ -187,6 +187,95 @@ pre.raw { background: var(--surface-2); border: 1px solid var(--line-2); padding
 }
 @media (max-width: 520px) { .kpis { grid-template-columns: minmax(0, 1fr); } .bar { grid-template-columns: 70px minmax(0,1fr) 96px; } }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+/* ---------- identidade visual v2 ---------- */
+body { background: var(--bg); }
+.ic { width: 18px; height: 18px; flex: none; vertical-align: -3px; }
+.side { background: linear-gradient(180deg, #102a55 0%, #0b1c3d 100%); border-right: 3px solid var(--gold); }
+.brand { padding: 22px 20px 18px; }
+.brand-top { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.brand .logo { width: 40px; height: 37px; flex: none; }
+.brand small { margin: 0; font-size: 11.5px; letter-spacing: .1em; color: #fff; line-height: 1.35; font-weight: 600; }
+.brand small em { font-style: normal; color: var(--gold); }
+.brand b { font-family: var(--f-ui); font-weight: 800; font-size: 22px; letter-spacing: -.01em; }
+.brand span { color: #b9c4da; }
+.nav { padding: 12px 12px; gap: 4px; }
+.nav .grp { display: flex; align-items: center; gap: 8px; font-size: 11px; color: #c5cfe2; padding: 16px 8px 6px; font-weight: 700; }
+.nav .grp .ic { width: 16px; height: 16px; color: #c5cfe2; }
+.nav a { padding: 10px 12px; border-radius: 10px; font-size: 14px; color: #e8edf7; }
+.nav a .nv { display: flex; align-items: center; gap: 12px; }
+.nav a .ic { color: #c9d3e6; }
+.nav a:hover { background: rgba(255,255,255,.06); }
+.nav a[aria-current="page"] { background: linear-gradient(90deg, #2357a8, #1d4486); box-shadow: 0 6px 16px rgba(9,25,60,.35); font-weight: 600; }
+.nav a[aria-current="page"] .ic { color: #fff; }
+.nav .cnt { background: #2b4a80; color: #fff; font-weight: 700; padding: 2px 8px; }
+.side-foot { padding: 12px; border-top: 1px solid rgba(255,255,255,.08); }
+.side-foot .usuario { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 10px; color: #e8edf7; text-decoration: none; }
+.side-foot .usuario:hover { background: rgba(255,255,255,.06); }
+.side-foot .usuario span { display: flex; flex-direction: column; line-height: 1.25; flex: 1; min-width: 0; }
+.side-foot .usuario small { font-size: 11px; color: #a9b6cf; }
+.side-foot .usuario b { font-size: 14px; color: #fff; overflow: hidden; text-overflow: ellipsis; }
+.side-foot .usuario .ch { width: 16px; height: 16px; color: #a9b6cf; }
+.side-foot .sinc { font-size: 11.5px; color: #a9b6cf; padding: 6px 12px 0; }
+.side-foot .sinc a { color: var(--gold); text-decoration: none; }
+.side-foot .sinc a .ic { width: 13px; height: 13px; margin: 0 3px 0 2px; }
+main { padding-block: 26px 60px; }
+.page-h { margin-bottom: 22px; align-items: flex-start; }
+.page-h h1 { font-size: 34px; font-weight: 800; letter-spacing: -.02em; color: var(--ink); margin-top: 2px; }
+.page-h p { font-size: 15.5px; margin-top: 6px; }
+.page-h-dir { display: flex; flex-direction: column; align-items: flex-end; gap: 14px; }
+.atualizado { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
+.eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; padding: 6px 12px; border-radius: 8px; background: #e6eefb; color: #1d3f78; font-family: var(--f-num); }
+.eyebrow .ic { width: 16px; height: 16px; color: var(--gold-ink); }
+.page-h .eyebrow:has(.ic) { background: var(--gold-soft); color: var(--gold-ink); font-family: var(--f-ui); }
+.btn { border-radius: 8px; }
+.btn .ic { width: 17px; height: 17px; }
+.btn.pri { background: linear-gradient(180deg, #14305f, #0f2347); border-color: #0f2347; box-shadow: 0 4px 12px rgba(15,35,71,.25); }
+.btn-lg { padding: 11px 20px; font-size: 14.5px; font-weight: 600; gap: 10px; }
+.panel { border-radius: 14px; box-shadow: 0 1px 2px rgba(15,35,71,.05), 0 8px 24px rgba(15,35,71,.06); }
+.panel > header { padding: 18px 24px; }
+.panel > header h2 { font-size: 19px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+.panel > header h2 .ic { width: 22px; height: 22px; }
+.panel .body { padding: 18px 24px; }
+.panel-busca .hint { display: flex; align-items: center; gap: 8px; }
+label.f { font-size: 14px; color: var(--ink); font-weight: 500; gap: 8px; }
+.panel-busca input[type=search], .panel-busca select, .panel-busca .btn-lg { min-height: 48px; font-size: 15px; border-radius: 8px; }
+.panel-busca input[type=search], .panel-busca select { padding: 10px 14px; }
+.dica { display: flex; gap: 16px; align-items: flex-start; background: #f2f7fe; border: 1px solid #dde8f8; border-radius: 10px; padding: 16px 20px; }
+.dica .ic { width: 28px; height: 28px; color: #2f6bd8; }
+.dica b { display: block; color: #2f6bd8; font-size: 15px; margin-bottom: 2px; }
+.dica span { color: var(--muted); font-size: 14px; }
+.info-box { display: flex; gap: 16px; align-items: center; background: #f4f7fc; border-left: 4px solid var(--gold); border-radius: 8px; padding: 14px 18px; }
+.info-box .ic { width: 30px; height: 30px; color: #1d3f78; }
+.info-box p { margin: 0; color: var(--muted); font-size: 13.5px; }
+.drop { border-radius: 10px; padding: 20px; font-size: 14px; background: #f7f9fd; display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; }
+.drop .ic { width: 24px; height: 24px; color: #2f6bd8; }
+textarea { border-radius: 10px; padding: 14px; font-size: 13.5px; }
+/* card principal */
+.hero { display: grid; grid-template-columns: minmax(0, 2.2fr) minmax(0, 1fr); background: radial-gradient(120% 140% at 0% 0%, #1b3c74 0%, #0f2347 55%, #0b1a37 100%); border-radius: 16px; color: #fff; margin-bottom: 18px; box-shadow: 0 10px 30px rgba(11,26,55,.28); overflow: hidden; }
+.hero a { color: inherit; text-decoration: none; }
+.hero-main { display: flex; gap: 22px; align-items: center; padding: 30px 32px; }
+.hero-ic { width: 84px; height: 84px; border-radius: 50%; background: rgba(255,255,255,.08); display: grid; place-items: center; flex: none; }
+.hero-ic .ic { width: 40px; height: 40px; color: #e9eefb; }
+.hero-txt { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0; }
+.hero .lab { font-size: 15px; color: #d5ddee; display: flex; align-items: center; gap: 10px; }
+.hero .lab .ic { width: 26px; height: 26px; }
+.hero-main .val { font-size: 44px; font-weight: 800; letter-spacing: -.02em; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.hero .sub { font-size: 15px; color: #c9d3e6; }
+.hero .bar { display: block; height: 6px; background: rgba(255,255,255,.14); border-radius: 4px; margin-top: 14px; overflow: hidden; max-width: 760px; }
+.hero .bar i { display: block; height: 100%; background: linear-gradient(90deg, #e4b84c, #f0cc6a); border-radius: 4px; }
+.hero-side { display: flex; flex-direction: column; justify-content: center; gap: 6px; padding: 30px 32px; border-left: 1px solid rgba(255,255,255,.14); margin: 22px 0; }
+.hero-side .val { font-size: 32px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.hero-side .sub { font-size: 13.5px; }
+.hero a:hover .val { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 6px; }
+table.t th { font-size: 12px; }
+.topbar { background: linear-gradient(90deg, #102a55, #0b1c3d); }
+.topbar b { font-family: var(--f-ui); font-weight: 800; }
+@media (max-width: 1100px) { .hero { grid-template-columns: minmax(0, 1fr); } .hero-side { border-left: 0; border-top: 1px solid rgba(255,255,255,.14); margin: 0 24px; padding: 20px 8px 26px; } }
+@media (max-width: 860px) { .page-h-dir { align-items: flex-start; } .page-h h1 { font-size: 28px; } .hero-main { padding: 22px; } .hero-main .val { font-size: 34px; } .hero-ic { width: 60px; height: 60px; } .hero-ic .ic { width: 30px; height: 30px; } }
+@media (max-width: 520px) { .hero-ic { display: none; } }
+:root[data-theme="dark"] .eyebrow, :root[data-theme="dark"] .dica, :root[data-theme="dark"] .info-box, :root[data-theme="dark"] .drop { background: var(--surface-2); border-color: var(--line); color: var(--ink); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .eyebrow, :root:not([data-theme="light"]) .dica, :root:not([data-theme="light"]) .info-box, :root:not([data-theme="light"]) .drop { background: var(--surface-2); border-color: var(--line); color: var(--ink); } }
 </style>
 </head>
 <body>
@@ -561,7 +650,6 @@ pre.raw { background: var(--surface-2); border: 1px solid var(--line-2); padding
     else if (log.nat === 'C') r.natureza = 'C';
     else r.natureza = sep.nat || '?';
     if (r.natureza === 'D') r.valor = Math.abs(r.valor);
-    if (r.natureza === '?') r.problemas.push('Não foi possível confirmar pela descrição que a movimentação é um crédito');
     if (!r.remetente) r.problemas.push('Remetente não identificado');
     if (!r.tipo) r.avisos.push('Tipo da movimentação não identificado');
     if (r.valor === 0) r.erro = 'Valor igual a zero';
@@ -1280,7 +1368,10 @@ pre.raw { background: var(--surface-2); border: 1px solid var(--line-2); padding
       meta = meta || {};
       return this.transacao(async () => {
         const loteId = uid('lote');
-        const novos = previa.itens.filter((i) => i.acao === 'novo');
+        const somente = meta.somente ? new Set(meta.somente.map(String)) : null;
+        const conferir = meta.conferir || null;
+        const novos = previa.itens.filter((i) => i.acao === 'novo' && (!somente || somente.has(String(i.reg.linha))));
+        if (somente && !novos.length) throw new Error('Nenhum crédito selecionado para conferir.');
         const ts = this.ts();
         const ids = [];
         for (const it of novos) {
@@ -1302,13 +1393,26 @@ pre.raw { background: var(--surface-2); border: 1px solid var(--line-2); padding
         for (const it of novos) {
           const c = it._criado;
           c.lancamento = this._lancamentoInicial(c, c.status === 'lancado' || c.status === 'utilizado' ? c.evidencia : null);
+          const cf = conferir && conferir[c.linha];
+          if (cf) {
+            for (const k of ['identificacao', 'solicitante', 'protocolo', 'comentario']) if (cf[k] != null) c.lancamento[k] = String(cf[k]).trim();
+            if (c.lancamento.solicitante) c.lancamento.solicitante = c.lancamento.solicitante.toUpperCase();
+            if (c.lancamento.sugestoes) delete c.lancamento.sugestoes.solicitante;
+            c.lancamento.dataConferencia = c.lancamento.dataConferencia || this.hoje();
+            c.lancamento.conferente = this.usuario.rotulo || this.config.conferentePadrao || '';
+            const falt = this.faltandoParaLancar(c);
+            if (falt.length) throw new Error('Faltam campos para ' + (c.remetente || 'crédito') + ' (' + formatBRL(c.valor) + '): ' + falt.join(', '));
+            if (c.status !== 'utilizado') { c.status = 'lancado'; c.motivo = 'Conferido na importação; aguardando utilização' + (c.lancamento.protocolo ? ' (protocolo ' + c.lancamento.protocolo + ')' : ''); }
+            c.lancamento.confirmadoEm = ts; c.lancamento.confirmadoPor = this.usuario.rotulo || ''; c.decisaoManual = true;
+            c.evidencia = c.evidencia && c.evidencia.fonte === 'planilha' ? c.evidencia : { fonte: 'app', descricao: 'Conferido na importação em ' + fmtData(this.hoje()) + ' por ' + (this.usuario.rotulo || 'usuário') };
+          }
           this._salvarCredito(c); ids.push(c.id);
-          this._evento({ tipo: 'importacao', creditoId: c.id, loteId, para: c.status, motivo: c.motivo, detalhe: { bruto: c.bruto, identificado: c.original, evidencia: c.evidencia ? c.evidencia.descricao : null } });
+          this._evento({ tipo: 'importacao', creditoId: c.id, loteId, para: c.status, motivo: c.motivo, detalhe: { bruto: c.bruto, identificado: c.original, evidencia: c.evidencia ? c.evidencia.descricao : null, lancamento: cf ? { solicitante: c.lancamento.solicitante, protocolo: c.lancamento.protocolo, conferente: c.lancamento.conferente } : undefined } });
         }
         const lote = {
           id: loteId, criadoEm: ts, uid: this.usuario.id || null, por: this.usuario.rotulo || '', origem: meta.origem || 'colagem', arquivo: meta.arquivo || null,
           hash: meta.hash || null, linhasTotal: meta.linhasTotal || null, anoConfirmado: previa.opts && previa.opts.ano || null,
-          novos: ids.length, existentes: previa.resumo.existentes, invalidas: previa.invalidas.slice(0, 500), ignoradas: previa.ignoradas.length,
+          novos: ids.length, existentes: previa.resumo.existentes, naoSelecionados: previa.itens.filter((i) => i.acao === 'novo').length - ids.length, invalidas: previa.invalidas.slice(0, 500), ignoradas: previa.ignoradas.length,
           porStatus: previa.resumo.porStatus, valorNovos: previa.resumo.valorNovos, creditos: ids, situacao: 'concluido',
         };
         this.lotes.put(loteId, lote);
@@ -1775,7 +1879,7 @@ pre.raw { background: var(--surface-2); border: 1px solid var(--line-2); padding
 
   const Core = {
     APP_NOME, APP_VERSAO, BACKUP_FORMATO, BACKUP_VERSAO, STATUS, CAMPOS, ROTULO_EVENTO,
-    simplificar, corDaCelula, statusDaCor, nomeCor, descEvidencia, chaveLinhaPlanilha,
+    sugerirSolicitante, simplificar, corDaCelula, statusDaCor, nomeCor, descEvidencia, chaveLinhaPlanilha,
     util: { norm, up, normRef, similaridade, parseMoneyBR, formatBRL, parseDateBR, excelSerialToISO, fmtData, hojeISO, diasEntre, uid, estavel, sha256, sha256js, clone },
     interpretarExtrato, celulasParaTexto, ofxParaTexto, extrairIdentificacao, lerPlanilha, indexarHistorico, chaveCredito, classificar, identificacaoPadrao, autoMapear,
     configPadrao, mesclarConfig, valorCampo, linhasPlanilha, paraCSV, tabelaCreditos, tabelaEventos, gerarXLSX,
@@ -1805,12 +1909,40 @@ pre.raw { background: var(--surface-2); border: 1px solid var(--line-2); padding
     rota: 'painel', filtros: lsGet('filtros', {}), sel: new Set(), pag: {}, sort: {}, impTxt: '', impAno: null, impAnoConf: false, previa: null, previaMeta: null,
     planilhaWb: null, planilhaLida: null, planilhaMeta: null, planilhaMapa: {}, restauracao: null, tabHist: 'eventos', histFiltro: { tipo: '', q: '', de: '', ate: '' }, concFiltro: 'todos', menu: false,
   };
+  const ICONES = {
+    home: '<path d="M3 10.5 12 3l9 7.5V21h-6v-6H9v6H3z"/>',
+    upload: '<path d="M7 18a5 5 0 1 1 .9-9.9A6 6 0 0 1 19 9a4.5 4.5 0 0 1-1 9"/><path d="M12 12v9M8.5 15.5 12 12l3.5 3.5"/>',
+    clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+    check: '<circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/>',
+    list: '<path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01"/>',
+    history: '<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/>',
+    table: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 4v16"/>',
+    cloud: '<path d="M7 18a5 5 0 1 1 .9-9.9A6 6 0 0 1 19 9a4.5 4.5 0 0 1-1 9z"/>',
+    gear: '<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/>',
+    layers: '<path d="m12 3 9 5-9 5-9-5z"/><path d="m3 13 9 5 9-5"/>',
+    bars: '<path d="M6 20V10M12 20V4M18 20v-7"/>',
+    user: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+    bank: '<path d="M3 10 12 4l9 6M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 20h18"/>',
+    shield: '<path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/><path d="m9 12 2 2 4-4"/>',
+    search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
+    calendar: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+    info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>',
+    file: '<path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h6"/>',
+    logout: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>',
+    chevron: '<path d="m9 6 6 6-6 6"/>',
+  };
+  const ic = (n, cls) => '<svg class="ic' + (cls ? ' ' + cls : '') + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (ICONES[n] || '') + '</svg>';
+  const ICONE_ROTA = { painel: 'home', importar: 'upload', aguardando: 'clock', conciliados: 'check', creditos: 'list', historico: 'history', planilha: 'table', backup: 'cloud', config: 'gear', Operação: 'layers', Controle: 'bars' };
+  const LOGO = '<svg class="logo" viewBox="0 0 48 44" aria-hidden="true"><defs><linearGradient id="lg-ouro" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f3d58a"/><stop offset="1" stop-color="#b8863a"/></linearGradient></defs><path d="M24 2 46 42H36L24 19 12 42H2z" fill="url(#lg-ouro)"/><path d="M24 26 31 42H17z" fill="#f6e3ad" opacity=".55"/></svg>';
+  function ultimaAtualizacao() {
+    let m = ''; for (const e of repo.eventos.todos()) if (e.ts > m) m = e.ts;
+    return m ? '<div class="atualizado">' + ic('calendar') + 'Última atualização: ' + dtHora(m).replace(',', '') + '</div>' : '';
+  }
   const ROTAS = [
     ['grp', 'Operação'],
     ['painel', 'Painel'],
     ['importar', 'Importar movimentações'],
     ['aguardando', 'Aguardando utilização'],
-    ['pendentes', 'Pendentes de confirmação'],
     ['conciliados', 'Utilizados / conciliados'],
     ['creditos', 'Todos os créditos'],
     ['grp', 'Controle'],
@@ -2022,26 +2154,28 @@ pre.raw { background: var(--surface-2); border: 1px solid var(--line-2); padding
     const sy = window.scrollY;
     const n = contagens();
     const nav = ROTAS.filter((r) => r[0] !== 'usuarios' || (modo === 'firebase' && perfilFb && perfilFb.papel === 'admin')).map((r) => {
-      if (r[0] === 'grp') return '<div class="grp">' + esc(r[1]) + '</div>';
-      const cnt = r[0] === 'pendentes' ? n.pendente : r[0] === 'conferencias' ? n.conferencia : r[0] === 'aguardando' ? n.lancado : null;
-      return '<a href="#' + r[0] + '"' + (ui.rota === r[0] ? ' aria-current="page"' : '') + '><span>' + esc(r[1]) + '</span>' + (cnt ? '<span class="cnt' + (r[0] === 'conferencias' ? ' alerta' : '') + '">' + cnt + '</span>' : '') + '</a>';
+      if (r[0] === 'grp') return '<div class="grp">' + ic(ICONE_ROTA[r[1]]) + esc(r[1]) + '</div>';
+      const cnt = r[0] === 'importar' ? n.pendente : r[0] === 'pendentes' ? n.pendente : r[0] === 'conferencias' ? n.conferencia : r[0] === 'aguardando' ? n.lancado : null;
+      return '<a href="#' + r[0] + '"' + (ui.rota === r[0] ? ' aria-current="page"' : '') + '><span class="nv">' + ic(ICONE_ROTA[r[0]]) + esc(r[1]) + '</span>' + (cnt ? '<span class="cnt' + (r[0] === 'conferencias' ? ' alerta' : '') + '">' + cnt + '</span>' : '') + '</a>';
     }).join('');
     let corpo = '';
     try { corpo = (VIEWS[ui.rota] || VIEWS.painel)(); } catch (e) { console.error(e); corpo = '<div class="alerta err">Erro ao montar esta tela: ' + esc(e.message) + '</div>'; }
     root.innerHTML = '<div class="topbar"><button data-act="menu" aria-label="Abrir menu">Menu</button><b>Controle de Depósitos</b><span class="num small">FIN - 00</span></div>' +
-      '<div class="app"><aside class="side' + (ui.menu ? ' open' : '') + '"><div class="brand"><small>Registro de Imóveis · Assis/SP</small><b>Controle de Depósitos</b><span>FIN - 00 · crédito bancário</span></div><nav class="nav">' + nav + '</nav>' +
-      '<div class="side-foot"><span class="dot' + (modo === 'local' ? ' local' : '') + '"></span>' + (modo === 'firebase' ? 'Sincronizado em tempo real' : modo === 'servidor' ? 'Dados no banco do aplicativo' : 'Dados neste navegador') + '<br>' + (modo === 'firebase' ? 'Conferente: <a href="#" data-act="trocar-operador" style="color:#fff;font-weight:700">' + esc(repo.usuario.rotulo || 'identifique-se') + '</a> · <a href="#" data-act="trocar-operador" style="color:var(--gold)">trocar</a><br><a href="#" data-act="sair" style="color:var(--gold)">Sair</a>' : '<a href="#" data-act="trocar-operador" style="color:var(--gold)">' + esc(repo.usuario.rotulo ? 'Conferente: ' + repo.usuario.rotulo : 'Identifique-se') + '</a>') + '</div></aside>' +
+      '<div class="app"><aside class="side' + (ui.menu ? ' open' : '') + '"><div class="brand"><div class="brand-top">' + LOGO + '<small>Registro de Imóveis<br><em>Assis/SP</em></small></div><b>Controle de Depósitos</b><span>FIN - 00 · Crédito bancário</span></div><nav class="nav">' + nav + '</nav>' +
+      '<div class="side-foot"><a href="#" class="usuario" data-act="trocar-operador" title="Trocar o nome do conferente">' + ic('user') + '<span><small>Conferente</small><b>' + esc(repo.usuario.rotulo || 'Identifique-se') + '</b></span>' + ic('chevron', 'ch') + '</a>' +
+      '<div class="sinc"><span class="dot' + (modo === 'local' ? ' local' : '') + '"></span>' + (modo === 'firebase' ? 'Sincronizado em tempo real' : modo === 'servidor' ? 'Dados no banco do aplicativo' : 'Dados neste navegador') + (modo === 'firebase' ? ' · <a href="#" data-act="sair">' + ic('logout') + 'Sair</a>' : '') + '</div></div></aside>' +
       (ui.menu ? '<div class="scrim" data-act="menu"></div>' : '') + '<main id="main">' + corpo + '</main></div>';
+    if (ui.rota === 'importar' && ui.previa) atualizarRodapeImport();
     if (foco) { const el = document.getElementById(foco.id); if (el) { el.focus(); try { if (foco.s != null) el.setSelectionRange(foco.s, foco.e); } catch (e) { /* campo sem seleção */ } } }
     window.scrollTo(0, sy);
   }
-  function cabecalho(titulo, desc, acoes, eyebrow) {
-    return '<div class="page-h"><div>' + (eyebrow ? '<span class="eyebrow">' + esc(eyebrow) + '</span>' : '') + '<h1>' + esc(titulo) + '</h1>' + (desc ? '<p>' + desc + '</p>' : '') + '</div>' + (acoes ? '<div class="row">' + acoes + '</div>' : '') + '</div>';
+  function cabecalho(titulo, desc, acoes, eyebrow, icone) {
+    return '<div class="page-h"><div>' + (eyebrow ? '<span class="eyebrow">' + (icone ? ic(icone) : '') + esc(eyebrow) + '</span>' : '') + '<h1>' + esc(titulo) + '</h1>' + (desc ? '<p>' + desc + '</p>' : '') + '</div><div class="page-h-dir">' + ultimaAtualizacao() + (acoes ? '<div class="row">' + acoes + '</div>' : '') + '</div></div>';
   }
   function avisosGerais() {
     let h = '';
     const orf = repo.orfaos().filter((c) => c.status !== 'cancelado');
-    if (orf.length) h += '<div class="alerta err"><span><b>' + orf.length + ' crédito(s) de uma importação interrompida.</b> A gravação foi cortada antes de concluir o lote. Confira em Conferências ou descarte-os.</span><span class="row"><a class="btn sm" href="#pendentes">Ver pendentes</a><button class="btn sm" data-act="descartar-orfaos">Descartar</button></span></div>';
+    if (orf.length) h += '<div class="alerta err"><span><b>' + orf.length + ' crédito(s) de uma importação interrompida.</b> A gravação foi cortada antes de concluir o lote. Confira em Conferências ou descarte-os.</span><span class="row"><a class="btn sm" href="#importar">Ver</a><button class="btn sm" data-act="descartar-orfaos">Descartar</button></span></div>';
     if (!repo.usuario.rotulo) h += '<div class="alerta"><span>Informe seu nome em Configurações para que o histórico registre quem fez cada alteração.</span><a class="btn sm" href="#config">Configurações</a></div>';
     if (podeEscrever === false) h += '<div class="alerta">Você está com acesso somente leitura: pode consultar e exportar, mas não alterar.</div>';
     const ub = repo.config.ultimoBackup; const dias = ub ? Math.floor((Date.now() - new Date(ub.em).getTime()) / 86400000) : null;
@@ -2082,14 +2216,18 @@ pre.raw { background: var(--surface-2); border: 1px solid var(--line-2); padding
     const lanc = repo.creditos.todos().filter((c) => c.status === 'lancado');
     const tot = lanc.reduce((a, c) => a + c.valor, 0);
     const b = ui.busca || (ui.busca = { tipo: 'todos', q: '' });
-    let h = cabecalho('Painel', '', '<a class="btn pri" href="#importar">Importar movimentações</a>', 'FIN - 00');
+    let h = cabecalho('Painel', 'Acompanhe os créditos bancários, consulte os depósitos e gerencie as movimentações.', '<a class="btn pri btn-lg" href="#importar">' + ic('upload') + 'Importar movimentações</a>', 'FIN - 00');
     h += avisosGerais();
-    h += '<div class="kpis" style="grid-template-columns:minmax(0,420px)"><a class="kpi destaque" href="#aguardando"><div class="lab">Conferidos, aguardando utilização</div><div class="val">' + brl(tot) + '</div><div class="sub">' + lanc.length + ' crédito(s)</div></a></div>';
+    const pend = repo.creditos.todos().filter((c) => c.status === 'pendente'); const totP = pend.reduce((a, c) => a + c.valor, 0);
+    const pct = tot + totP ? Math.round(tot / (tot + totP) * 100) : 100;
+    h += '<div class="hero"><a class="hero-main" href="#aguardando"><span class="hero-ic">' + ic('bank') + '</span><span class="hero-txt"><span class="lab">Conferidos, aguardando utilização</span><span class="val">' + brl(tot) + '</span><span class="sub">' + lanc.length + ' crédito(s)</span><span class="bar"><i style="width:' + pct + '%"></i></span></span></a>' +
+      '<a class="hero-side" href="#importar"><span class="lab">' + ic('shield') + 'Saldo em análise</span><span class="val">' + brl(totP, true) + '</span><span class="sub">' + pend.length + ' crédito(s) importados e ainda não conferidos</span></a></div>';
     const opt = (v, r) => '<option value="' + v + '"' + (b.tipo === v ? ' selected' : '') + '>' + r + '</option>';
-    h += '<div class="panel"><header><h2>Pesquisar crédito</h2><span class="hint">Antes de usar um depósito, confira se ele já foi conferido ou utilizado</span></header><form class="body row" id="fm-busca" style="align-items:end">' +
-      '<label class="f" style="width:170px">Pesquisar por<select id="bs-tipo">' + opt('todos', 'Todos os campos') + opt('protocolo', 'Protocolo') + opt('id', 'Código / ID') + opt('nome', 'Nome') + opt('valor', 'Valor') + '</select></label>' +
+    h += '<div class="panel panel-busca"><header><h2>' + ic('search') + 'Pesquisar crédito</h2><span class="hint">' + ic('info') + 'Antes de usar um depósito, confira se ele já foi conferido ou utilizado.</span></header><form class="body row" id="fm-busca" style="align-items:end">' +
+      '<label class="f" style="width:240px">Pesquisar por<select id="bs-tipo">' + opt('todos', 'Todos os campos') + opt('protocolo', 'Protocolo') + opt('id', 'Código / ID') + opt('nome', 'Nome') + opt('valor', 'Valor') + '</select></label>' +
       '<label class="f" style="flex:1;min-width:200px">Digite o que procura<input type="search" id="bs-q" value="' + esc(b.q) + '" placeholder="Ex.: 722472, 279094, GIRO, 957,34" autocomplete="off"></label>' +
-      '<button class="btn pri" type="submit">Pesquisar</button>' + (b.q ? '<button class="btn" type="button" data-act="busca-limpar">Limpar</button>' : '') + '</form>';
+      '<button class="btn pri btn-lg" type="submit">' + ic('search') + 'Pesquisar</button>' + (b.q ? '<button class="btn btn-lg" type="button" data-act="busca-limpar">Limpar</button>' : '') + '</form>' +
+      (b.q ? '' : '<div class="body" style="padding-top:0"><div class="dica">' + ic('file') + '<div><b>Dica</b><span>Você pode pesquisar pelo código do crédito, número do protocolo, valor ou nome do remetente. O resultado avisa se o crédito já foi conferido ou utilizado.</span></div></div></div>');
     if (b.q) {
       const res = pesquisar(b.tipo, b.q);
       if (!res.length) h += '<div class="body"><div class="alerta" style="margin:0"><span><b>Nenhum crédito encontrado</b> para "' + esc(b.q) + '". Se o depósito é recente, importe o extrato do dia antes de concluir.</span></div></div>';
@@ -2097,7 +2235,7 @@ pre.raw { background: var(--surface-2); border: 1px solid var(--line-2); padding
         h += '<div class="body stack"><div class="small muted">' + res.length + ' crédito(s) encontrado(s)' + (res.length > 30 ? '; mostrando os 30 mais recentes' : '') + '</div>';
         h += res.slice(0, 30).map((c) => { const l = c.lancamento || {};
           return '<div style="border:1px solid var(--line);border-radius:6px;padding:10px 12px" class="stack"><div class="row" style="justify-content:space-between"><div class="row"><span class="num">' + esc(dt(c.data) || 'sem data') + '</span><b>' + esc(c.remetente || l.identificacao || '—') + '</b><span class="num muted">' + esc(c.referencia || '') + '</span><b class="num">' + brl(c.valor) + '</b>' + pill(c.status) + '</div><div class="row">' +
-            (c.status === 'lancado' ? '<button class="btn sm" data-act="editar" data-id="' + c.id + '">Incluir protocolo</button><button class="btn sm pri" data-act="utilizado" data-id="' + c.id + '">Marcar como utilizado</button>' : '') + (c.status === 'pendente' ? '<button class="btn sm pri" data-act="lancar" data-id="' + c.id + '">Conferir</button>' : '') +
+            (c.status === 'lancado' ? '<button class="btn sm" data-act="editar" data-id="' + c.id + '">Incluir protocolo</button><button class="btn sm pri" data-act="utilizado" data-id="' + c.id + '">Marcar como utilizado</button>' : '') + (c.status === 'pendente' ? '<a class="btn sm pri" href="#importar">Conferir</a>' : '') +
             '<button class="btn sm" data-act="detalhe" data-id="' + c.id + '">Detalhes</button></div></div>' + alertaSituacao(c) +
             '<div class="small muted">' + [l.protocolo ? 'Protocolo: ' + esc(l.protocolo) : '', l.solicitante ? 'Solicitante: ' + esc(l.solicitante) : '', l.conferente ? 'Conferente: ' + esc(l.conferente) : ''].filter(Boolean).join(' · ') + '</div></div>'; }).join('') + '</div>';
       }
@@ -2107,34 +2245,63 @@ pre.raw { background: var(--surface-2); border: 1px solid var(--line-2); padding
   };
 
   VIEWS.importar = () => {
-    let h = cabecalho('Importar movimentações', 'Cole várias linhas copiadas do extrato ou envie um arquivo (CSV, Excel, OFX ou TXT). Nada é gravado antes da sua confirmação, e importar o mesmo extrato de novo não duplica créditos.', '', 'Extrato bancário');
+    let h = cabecalho('Importar movimentações', 'Cole várias linhas copiadas do extrato ou envie um arquivo (CSV, Excel, OFX ou TXT). Nada é gravado antes da sua confirmação, e importar o mesmo extrato de novo não duplica créditos.', '', 'Extrato bancário', 'bank');
     const anoPadrao = ui.impAno || +repo.hoje().slice(0, 4);
     h += '<div class="panel"><div class="body stack"><label class="f">Linhas do extrato<textarea id="imp-txt" rows="9" spellcheck="false" placeholder="PIX RECEBIDO REM: GIRO PAGAMENTOS E TEC 27/10 722472 957,34">' + esc(ui.impTxt) + '</textarea></label>' +
-      '<div class="drop" id="imp-drop">Arraste um arquivo aqui ou <label style="color:var(--focus);cursor:pointer;text-decoration:underline">escolha um arquivo<input id="imp-arq" type="file" accept=".csv,.txt,.xlsx,.xls,.ofx,.ods" hidden data-act-change="arquivo-extrato"></label> · CSV, Excel, OFX ou TXT' + (ui.previaMeta && ui.previaMeta.arquivo ? '<div class="small" style="margin-top:6px">Arquivo carregado: <b>' + esc(ui.previaMeta.arquivo) + '</b></div>' : '') + '</div>' +
-      '<div class="row" style="justify-content:space-between"><div class="row"><label class="f" style="width:150px">Ano para datas sem ano<input id="imp-ano" type="number" min="2000" max="2100" value="' + anoPadrao + '"></label><label class="row small" style="margin-top:16px"><input id="imp-anoconf" type="checkbox"' + (ui.impAnoConf ? ' checked' : '') + '> Confirmo este ano para as datas "dd/mm"</label></div>' +
-      '<div class="row"><button class="btn" data-act="imp-limpar">Limpar</button><button class="btn pri" data-act="imp-analisar">Analisar movimentações</button></div></div>' +
-      '<p class="hint" style="margin:0">Depois de analisar, informe a <b>data do depósito</b> de cada lançamento na coluna Data. Quando a linha traz a data, ela já vem preenchida para você conferir. A importação só é liberada com todas as datas preenchidas. Débitos, saldos e cabeçalhos do extrato são separados automaticamente.</p></div></div>';
+      '<div class="drop" id="imp-drop">' + ic('upload') + ' Arraste um arquivo aqui ou <label style="color:var(--focus);cursor:pointer;text-decoration:underline">escolha um arquivo<input id="imp-arq" type="file" accept=".csv,.txt,.xlsx,.xls,.ofx,.ods" hidden data-act-change="arquivo-extrato"></label> · CSV, Excel, OFX ou TXT' + (ui.previaMeta && ui.previaMeta.arquivo ? '<div class="small" style="margin-top:6px">Arquivo carregado: <b>' + esc(ui.previaMeta.arquivo) + '</b></div>' : '') + '</div>' +
+      '<div class="row" style="justify-content:space-between"><div class="row"><label class="f" style="width:200px">Ano para datas sem ano<input id="imp-ano" type="number" min="2000" max="2100" value="' + anoPadrao + '"></label><label class="row small" style="margin-top:16px"><input id="imp-anoconf" type="checkbox"' + (ui.impAnoConf ? ' checked' : '') + '> Confirmo este ano para as datas "dd/mm"</label></div>' +
+      '<div class="row"><button class="btn btn-lg" data-act="imp-limpar">Limpar</button><button class="btn pri btn-lg" data-act="imp-analisar">' + ic('search') + 'Analisar movimentações</button></div></div>' +
+      '<div class="info-box">' + ic('info') + '<p>Depois de analisar, informe a <b>data do depósito</b> de cada lançamento na coluna Data. Quando a linha traz a data, ela já vem preenchida para você conferir. A importação só é liberada com todas as datas preenchidas. Débitos, saldos e cabeçalhos do extrato são separados automaticamente.</p></div></div></div>';
     const p = ui.previa;
     if (p) {
       const r = p.resumo;
-      h += '<div class="panel" style="margin-top:14px"><header><h2>Resultado da análise</h2><div class="row small"><span><b>' + r.novos + '</b> novo(s) · <span class="num">' + brl(r.valorNovos) + '</span></span><span>· <b>' + r.existentes + '</b> já importado(s)</span><span>· <b>' + r.invalidas + '</b> inválida(s)</span><span>· ' + r.ignoradas + ' ignorada(s)</span></div></header>';
-      h += '<div class="body row">' + Object.entries(r.porStatus).map(([k, n]) => pill(k) + ' <span class="num">' + n + '</span>').join(' &nbsp; ') + '</div>';
-      const itens = p.itens.map((it, i) => Object.assign({ id: 'p' + i, _it: it }, it.reg, { status: it.acao === 'existente' ? 'existente' : it.status, motivo: it.motivo }));
-      const colRes = { id: 'res', rot: 'Classificação', val: (c) => c.status, html: (c) => (c.status === 'existente' ? '<span class="pill st-existente">Já consta</span> ' + pill(c._it.status) : pill(c.status)) };
-      const colMot = { id: 'mot', rot: 'Motivo', html: (c) => '<div class="motivo">' + esc(c.motivo) + '</div>' + (c._it && c._it.alerta ? '<div class="tag err" style="white-space:normal;margin-top:3px">' + esc(c._it.alerta) + '</div>' : '') + (c.avisos && c.avisos.length ? '<div class="small" style="margin-top:3px">' + c.avisos.map((a) => '<span class="tag">' + esc(a) + '</span>').join(' ') + '</div>' : '') };
-      const colLin = { id: 'lin', rot: 'Linha', val: (c) => c.linha, html: (c) => '<span class="num muted">' + c.linha + '</span>' };
-      const colData = { id: 'data', rot: 'Data do depósito', val: (c) => c.data || '', html: (c) => (c.status === 'existente' ? '<span class="num">' + esc(dt(c.data)) + '</span>' : '<input type="date" id="imp-dt-' + c.linha + '" data-impdata="' + c.linha + '" value="' + esc(c.data || '') + '" style="' + (c.data ? '' : 'border-color:var(--danger);') + 'min-width:140px"' + ' aria-label="Data do depósito">' + (c.data ? '' : '<div class="small" style="color:var(--danger)">informe a data</div>')) };
-      h += tabela('previa', itens, [colLin, colData, COL.rem, COL.ref, COL.valor, colRes, colMot], { sort: { col: 'lin', dir: 1 }, tam: 200 });
-      if (p.invalidas.length) h += '<div class="body"><h2 style="font-size:14px;margin:0 0 8px">Linhas inválidas ou incompletas (não serão importadas)</h2><div class="tw"><table class="t"><thead><tr><th>Linha</th><th>Conteúdo</th><th>Problema</th></tr></thead><tbody>' + p.invalidas.map((x) => '<tr><td class="num">' + x.linha + '</td><td class="mono">' + esc(x.bruto) + '</td><td><span class="tag err">' + esc(x.motivo) + '</span></td></tr>').join('') + '</tbody></table></div><p class="hint">Corrija essas linhas no texto acima e analise de novo, ou lance-as manualmente depois.</p></div>';
+      ui.impCampos = ui.impCampos || {};
+      const novos = p.itens.filter((it) => it.acao === 'novo');
+      for (const it of novos) {
+        const k = it.reg.linha;
+        if (!ui.impCampos[k]) {
+          const sug = repo.config.regras.sugerirSolicitante ? C.sugerirSolicitante(it.reg, repo.hist) : null;
+          ui.impCampos[k] = { incluir: true, identificacao: C.identificacaoPadrao(it.reg, repo.config), solicitante: sug ? sug.valor : '', sugerido: !!sug, protocolo: '', comentario: '' };
+        }
+      }
+      h += datalistSolic();
+      h += '<div class="panel" style="margin-top:14px"><header><h2>Conferência dos lançamentos</h2><div class="row small"><span><b>' + novos.length + '</b> novo(s) para conferir</span><span>· <b>' + r.existentes + '</b> já consta(m)</span><span>· <b>' + r.invalidas + '</b> inválida(s)</span><span>· ' + r.ignoradas + ' ignorada(s)</span></div></header>';
+      const inp = (k, campo, ph, extra) => '<input type="text" id="impc-' + campo + '-' + k + '" data-impc="' + campo + '" data-linha="' + k + '" value="' + esc(ui.impCampos[k][campo] || '') + '" placeholder="' + esc(ph) + '"' + (extra || '') + '>';
+      const linhasOrd = p.itens.slice().sort((a, b) => a.reg.linha - b.reg.linha);
+      h += '<div class="tw"><table class="t" id="tb-imp"><thead><tr><th style="width:30px" title="Conferir este lançamento">✓</th><th>Data do depósito</th><th>Remetente</th><th>Código</th><th class="r">Valor</th><th>Identificação na planilha</th><th>Solicitante</th><th>Protocolo</th><th>Comentário</th></tr></thead><tbody>';
+      for (const it of linhasOrd) {
+        const g = it.reg, k = g.linha;
+        const remHtml = '<div class="rem">' + esc(g.remetente || '—') + '</div><div class="small muted">' + esc(g.tipo || '') + '</div>';
+        if (it.acao === 'existente') {
+          const ex = repo.creditos.get(it.existente);
+          h += '<tr style="background:var(--surface-2)"><td><input type="checkbox" disabled aria-label="Já consta"></td><td class="num">' + esc(dt(g.data)) + '</td><td>' + remHtml + '</td><td class="num">' + esc(g.referencia || '') + '</td><td class="r num">' + brl(g.valor) + '</td><td colspan="4">' + (ex ? alertaSituacao(ex) : '<span class="pill st-existente">Já consta</span>') + '</td></tr>';
+          continue;
+        }
+        const cp = ui.impCampos[k];
+        h += '<tr data-implinha="' + k + '"' + (cp.incluir ? '' : ' style="opacity:.55"') + '><td><input type="checkbox" data-impc="incluir" data-linha="' + k + '" id="impc-incluir-' + k + '"' + (cp.incluir ? ' checked' : '') + ' aria-label="Conferir"></td>' +
+          '<td><input type="date" id="imp-dt-' + k + '" data-impdata="' + k + '" value="' + esc(g.data || '') + '" style="min-width:140px" aria-label="Data do depósito"></td>' +
+          '<td>' + remHtml + (it.alerta ? '<div class="tag err" style="white-space:normal;margin-top:3px">' + esc(it.alerta) + '</div>' : '') + '</td>' +
+          '<td class="num">' + (g.referencia ? esc(g.referencia) : '<span class="tag err">sem código</span>') + '</td><td class="r num">' + brl(g.valor) + '</td>' +
+          '<td>' + inp(k, 'identificacao', 'Identificação', ' style="min-width:190px"') + '</td>' +
+          '<td>' + inp(k, 'solicitante', 'Colaborador', ' list="dl-solic" style="min-width:120px"') + (cp.sugerido && cp.solicitante ? '<div class="small muted">sugerido pelo histórico</div>' : '') + '</td>' +
+          '<td>' + inp(k, 'protocolo', 'Opcional', ' style="min-width:100px"') + '</td><td>' + inp(k, 'comentario', '', ' style="min-width:110px"') + '</td></tr>';
+      }
+      h += '</tbody></table></div>';
+      if (p.invalidas.length) h += '<div class="body"><h2 style="font-size:14px;margin:0 0 8px">Linhas inválidas ou incompletas (não serão importadas)</h2><div class="tw"><table class="t"><thead><tr><th>Linha</th><th>Conteúdo</th><th>Problema</th></tr></thead><tbody>' + p.invalidas.map((x) => '<tr><td class="num">' + x.linha + '</td><td class="mono">' + esc(x.bruto) + '</td><td><span class="tag err">' + esc(x.motivo) + '</span></td></tr>').join('') + '</tbody></table></div></div>';
       if (p.ignoradas.length) h += '<details class="body"><summary class="small">' + p.ignoradas.length + ' linha(s) ignorada(s): débitos, saldos e cabeçalhos</summary><div class="tw" style="margin-top:8px"><table class="t"><tbody>' + p.ignoradas.slice(0, 300).map((x) => '<tr><td class="num">' + x.linha + '</td><td class="mono">' + esc(x.bruto) + '</td><td class="small muted">' + esc(x.motivo) + '</td></tr>').join('') + '</tbody></table></div></details>';
-      const faltaData = p.itens.filter((it) => it.acao === 'novo' && !it.reg.data).length;
-      h += '<div class="pag" style="border-top:1px solid var(--line-2)"><span>' + (faltaData ? '<b style="color:var(--danger)">Preencha a data do depósito de ' + faltaData + ' lançamento(s) para liberar a importação.</b>' : r.novos ? 'Os créditos novos serão gravados com a classificação acima. Você poderá revisar cada um depois.' : 'Não há créditos novos para importar.') + '</span><button class="btn pri" data-act="imp-confirmar"' + (r.novos && !faltaData ? '' : ' disabled') + '>Importar ' + r.novos + ' crédito(s)</button></div></div>';
+      h += '<div class="pag" style="border-top:1px solid var(--line-2)"><span id="imp-rodape"></span><span class="row"><span class="small muted">Conferente: <b>' + esc(repo.usuario.rotulo || '—') + '</b> · ' + esc(dt(repo.hoje())) + '</span><button class="btn pri" id="bt-imp-conf" data-act="imp-confirmar">Conferir</button></span></div></div>';
     } else {
       h += '<div class="panel" style="margin-top:14px"><header><h2>Formatos aceitos</h2></header><div class="body doc small"><ul style="margin:0;padding-left:18px">' +
         '<li>Linha única do extrato: <code>PIX RECEBIDO REM: GIRO PAGAMENTOS E TEC 27/10 722472 957,34</code></li>' +
         '<li>Cópia da tabela do internet banking (Data, Lançamento, Dcto., Crédito, Débito, Saldo), inclusive com a linha "REM: …" abaixo do lançamento</li>' +
         '<li>Arquivos CSV (separador ; , ou tabulação), Excel (.xlsx/.xls), OFX e TXT</li>' +
         '<li>Espaços extras, tabulações e "R$" são tolerados; datas sem ano recebem o ano informado acima</li></ul></div></div>';
+    }
+    const antigos = repo.creditos.todos().filter((c) => c.status === 'pendente');
+    if (antigos.length) {
+      const vis = new Set(antigos.map((c) => c.id)); for (const id of Array.from(ui.sel)) if (!vis.has(id)) ui.sel.delete(id);
+      h += (p ? '' : datalistSolic()) + '<div class="panel" style="margin-top:14px"><header><h2>Importados antes e ainda não conferidos (' + antigos.length + ')</h2><span class="hint">Preencha e clique em Confirmar</span></header>' + barraLote('<span class="row"><input type="text" id="lote-solic" list="dl-solic" placeholder="Solicitante" style="width:150px"><button class="btn sm" data-act="lote-solic">Aplicar aos selecionados</button></span><button class="btn sm pri" data-act="lancar-lote">Confirmar</button><button class="btn sm" data-act="ignorar-lote">Ignorar</button>') +
+        tabela('pendentes', antigos, colsPendentes(), { sel: true, sort: { col: 'data', dir: 1 } }) + '</div>';
     }
     return h;
   };
@@ -2559,6 +2726,32 @@ pre.raw { background: var(--surface-2); border: 1px solid var(--line-2); padding
     for (const c of repo.creditos.todos()) if (c.lancamento && c.lancamento.dataConferencia >= '2025-01-01') add(c.lancamento.conferente, 1);
     return Array.from(m.entries()).sort((a, b) => b[1] - a[1]).map((x) => x[0]);
   }
+  function pendenciasImport() {
+    const p = ui.previa; if (!p) return { sel: [], faltas: {} };
+    const sel = [], faltas = {};
+    for (const it of p.itens) {
+      if (it.acao !== 'novo') continue; const k = it.reg.linha; const cp = (ui.impCampos || {})[k]; if (!cp || !cp.incluir) continue;
+      sel.push(k);
+      const tmp = Object.assign({}, it.reg, { lancamento: { identificacao: cp.identificacao, solicitante: cp.solicitante, protocolo: cp.protocolo, comentario: cp.comentario, dataConferencia: repo.hoje(), conferente: repo.usuario.rotulo || repo.config.conferentePadrao } });
+      const f = repo.faltandoParaLancar(tmp); if (!it.reg.data && !f.some((x) => /DATA DO DEP/i.test(U.norm(x)))) f.unshift('DATA DO DEPÓSITO');
+      if (f.length) faltas[k] = f;
+    }
+    return { sel, faltas };
+  }
+  function atualizarRodapeImport() {
+    const el = document.getElementById('imp-rodape'), bt = document.getElementById('bt-imp-conf'); if (!el || !bt) return;
+    const { sel, faltas } = pendenciasImport(); const nF = Object.keys(faltas).length;
+    const tot = ui.previa.itens.filter((it) => sel.includes(it.reg.linha)).reduce((a, it) => a + it.reg.valor, 0);
+    el.innerHTML = !sel.length ? 'Nenhum lançamento selecionado.' : nF ? '<b style="color:var(--danger)">Preencha os campos em vermelho de ' + nF + ' lançamento(s) para liberar.</b>' : '<b>' + sel.length + '</b> lançamento(s) prontos · <span class="num">' + brl(tot) + '</span>';
+    bt.disabled = !sel.length || nF > 0; bt.textContent = 'Conferir ' + sel.length + ' crédito(s)';
+    document.querySelectorAll('[data-implinha]').forEach((tr) => {
+      const k = +tr.dataset.implinha; const f = faltas[k] || [];
+      const marca = (sel2, cond) => { const e = tr.querySelector(sel2); if (e) e.style.borderColor = cond ? 'var(--danger)' : ''; };
+      marca('[data-impdata]', f.some((x) => /DATA DO DEP/i.test(U.norm(x))));
+      marca('[data-impc=identificacao]', f.some((x) => /IDENTIFICA/i.test(U.norm(x))));
+      marca('[data-impc=solicitante]', f.some((x) => /SOLICITANTE/i.test(U.norm(x))));
+    });
+  }
   const ACOES = {
     sair: async (b, e) => { e.preventDefault(); try { sessionStorage.removeItem('cd:nome-sessao'); } catch (x) { /* ignora */ } await fbAuth.signOut(); },
     'busca-limpar': () => { ui.busca = { tipo: ui.busca.tipo, q: '' }; render(); },
@@ -2620,7 +2813,7 @@ pre.raw { background: var(--surface-2); border: 1px solid var(--line-2); padding
     'ver-lote': (b) => { ui.filtros.creditos = { lote: b.dataset.id }; location.hash = 'creditos'; },
     'ver-invalidas': (b) => { const l = repo.lotes.get(b.dataset.id); modal({ titulo: 'Linhas inválidas do lote', corpo: '<div class="tw"><table class="t"><tbody>' + l.invalidas.map((x) => '<tr><td class="num">' + x.linha + '</td><td class="mono">' + esc(x.bruto) + '</td><td class="small">' + esc(x.motivo) + '</td></tr>').join('') + '</tbody></table></div>', botoes: [{ rot: 'Fechar', v: 'cancel' }], lg: true }); },
     // importação
-    'imp-limpar': () => { ui.impDatas = {}; ui.impDatasTxt = null; ui.impTxt = ''; ui.previa = null; ui.previaMeta = null; render(); },
+    'imp-limpar': () => { ui.impDatas = {}; ui.impCampos = {}; ui.impDatasTxt = null; ui.impTxt = ''; ui.previa = null; ui.previaMeta = null; render(); },
     'imp-analisar': () => {
       ui.impTxt = document.getElementById('imp-txt').value;
       const ano = parseInt(document.getElementById('imp-ano').value, 10); ui.impAno = ano;
@@ -2634,14 +2827,20 @@ pre.raw { background: var(--surface-2); border: 1px solid var(--line-2); padding
     },
     'imp-confirmar': async () => {
       const p = ui.previa; if (!p) return;
-      if (p.itens.some((it) => it.acao === 'novo' && !it.reg.data)) { toast('Preencha a data do depósito de todos os lançamentos.', true); return; }
-      const r = await modal({ titulo: 'Importar créditos', ok: 'Importar ' + p.resumo.novos, corpo: '<p style="margin:0">Serão gravados <b>' + p.resumo.novos + '</b> crédito(s) novo(s), total <b class="num">' + brl(p.resumo.valorNovos) + '</b>. ' + p.resumo.existentes + ' já existente(s) e ' + p.resumo.invalidas + ' linha(s) inválida(s) ficam de fora.</p>' + (p.opts.ano ? '' : '<div class="alerta" style="margin:0">Datas sem ano receberão o ano inferido e ficarão marcadas para confirmação.</div>') });
+      const { sel, faltas } = pendenciasImport();
+      if (!sel.length) { toast('Marque ao menos um lançamento para conferir.', true); return; }
+      if (Object.keys(faltas).length) { toast('Preencha os campos em vermelho antes de conferir.', true); atualizarRodapeImport(); return; }
+      if (!repo.usuario.rotulo) { await pedirOperador(true); if (!repo.usuario.rotulo) return; }
+      const tot = p.itens.filter((it) => sel.includes(it.reg.linha)).reduce((a, it) => a + it.reg.valor, 0);
+      const nao = p.itens.filter((it) => it.acao === 'novo' && !sel.includes(it.reg.linha)).length;
+      const r = await modal({ titulo: 'Conferir créditos', ok: 'Conferir ' + sel.length, corpo: '<p style="margin:0"><b>' + sel.length + '</b> crédito(s), total <b class="num">' + brl(tot) + '</b>, serão gravados como <b>conferidos por ' + esc(repo.usuario.rotulo) + '</b> em ' + esc(dt(repo.hoje())) + ' e ficarão em "Aguardando utilização".</p>' + (nao ? '<p class="hint" style="margin:0">' + nao + ' lançamento(s) desmarcado(s) não serão gravados.</p>' : '') });
       if (!r) return;
       const meta = Object.assign({ origem: ui.previaMeta ? 'arquivo' : 'colagem' }, ui.previaMeta || {});
       try { meta.hash = await U.sha256(ui.impTxt); } catch (e) { /* sem hash */ }
       meta.linhasTotal = ui.impTxt.split('\n').length; delete meta.textoArquivo;
-      const lote = await agir(() => repo.importar(p, meta), (l) => l.novos + ' crédito(s) importado(s).');
-      if (lote) { ui.previa = null; ui.impTxt = ''; ui.previaMeta = null; location.hash = 'pendentes'; }
+      meta.somente = sel; meta.conferir = {}; for (const k of sel) meta.conferir[k] = ui.impCampos[k];
+      const lote = await agir(() => repo.importar(p, meta), (l) => l.novos + ' crédito(s) conferido(s) e gravado(s).');
+      if (lote) { ui.previa = null; ui.impTxt = ''; ui.previaMeta = null; ui.impCampos = {}; ui.impDatas = {}; location.hash = 'aguardando'; }
     },
     // planilha
     'pl-reler': () => { lerPlanilhaSelecionada(); render(); },
@@ -2729,6 +2928,7 @@ pre.raw { background: var(--surface-2); border: 1px solid var(--line-2); padding
     if (t.dataset.filtro) { const k = t.dataset.filtro; ui.filtros[k] = Object.assign({}, ui.filtros[k], { [t.dataset.k]: t.value }); ui.pag[k] = 0; lsSet('filtros', ui.filtros); clearTimeout(tFiltro); tFiltro = setTimeout(render, t.tagName === 'SELECT' || t.type === 'date' ? 0 : 250); }
     if (t.dataset.hf) { ui.histFiltro[t.dataset.hf] = t.value; ui.pag.eventos = 0; clearTimeout(tFiltro); tFiltro = setTimeout(render, 250); }
     if (t.id === 'imp-txt') ui.impTxt = t.value;
+    if (t.dataset.impc && t.dataset.impc !== 'incluir') { const cp = ui.impCampos[t.dataset.linha]; cp[t.dataset.impc] = t.dataset.impc === 'solicitante' ? t.value.toUpperCase() : t.value; if (t.dataset.impc === 'solicitante') cp.sugerido = false; atualizarRodapeImport(); }
   });
   root.addEventListener('change', async (e) => {
     const t = e.target;
@@ -2738,6 +2938,7 @@ pre.raw { background: var(--surface-2); border: 1px solid var(--line-2); padding
       await agir(() => repo.editar(id, { ['lancamento.' + campo]: v }, c.status === 'pendente' ? 'Preenchimento para lançamento' : (campo === 'protocolo' ? 'Protocolo incluído após a conferência' : 'Campo alterado após a conferência')), campo === 'protocolo' && c.status !== 'pendente' ? 'Protocolo ' + (v || '(vazio)') + ' salvo. O crédito continua aguardando utilização.' : null);
       return;
     }
+    if (t.dataset.impc === 'incluir') { ui.impCampos[t.dataset.linha].incluir = t.checked; const tr = t.closest('tr'); if (tr) tr.style.opacity = t.checked ? '' : '.55'; atualizarRodapeImport(); return; }
     if (t.dataset.impdata) {
       ui.impDatas = ui.impDatas || {}; if (t.value) ui.impDatas[t.dataset.impdata] = t.value; else delete ui.impDatas[t.dataset.impdata];
       ui.previa = repo.previaImportacao(ui.impDatasTxt || ui.impTxt, Object.assign({ datas: ui.impDatas }, ui.previaOpts || { herdarData: false }));
