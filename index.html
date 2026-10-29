@@ -468,7 +468,7 @@ pre.raw { background: var(--surface-2); border: 1px solid var(--line-2); padding
   function separarTipo(desc) {
     let tipo = '', rem = '', nat = null;
     const U = up(desc);
-    const mR = U.match(/\b(REM|REMETENTE)\s*:\s*/);
+    const mR = U.match(/\b(REM|REMET|REMETENTE)\s*[:.]\s*/);
     const mD = U.match(/\b(DES|DESTINATARIO|FAVORECIDO)\s*:\s*/);
     if (mR) { tipo = desc.slice(0, mR.index).trim(); rem = desc.slice(mR.index + mR[0].length).trim(); nat = 'C'; }
     else if (mD) { tipo = desc.slice(0, mD.index).trim(); rem = desc.slice(mD.index + mD[0].length).trim(); nat = 'D'; }
@@ -478,8 +478,8 @@ pre.raw { background: var(--surface-2); border: 1px solid var(--line-2); padding
       if (pref) { tipo = desc.slice(0, pref.length).trim(); rem = desc.slice(pref.length).replace(/^[\s:\-–]+/, '').trim(); }
       else { rem = desc.trim(); }
     }
-    rem = rem.replace(/[\s\-–:;,]+$/, '').trim();
-    tipo = tipo.replace(/[\s\-–:;,]+$/, '').trim();
+    rem = rem.replace(/^[\s|]+/, '').replace(/[\s\-–:;,|]+$/, '').trim();
+    tipo = tipo.replace(/[\s\-–:;,|]+$/, '').trim();
     if (!nat) {
       const T = norm(tipo || desc);
       if (KW_DEBITO.test(T) && !KW_CREDITO.test(T)) nat = 'D';
@@ -544,8 +544,8 @@ pre.raw { background: var(--surface-2); border: 1px solid var(--line-2); padding
       } else { r.data = s.iso; r.dataTexto = dSu[0]; r.anoInferido = s.inferido; r.dataOperacao = s.iso; }
     }
     if (!r.data && !dCu.length && !dSu.length) {
-      if (ctx.dataAnterior) { r.data = ctx.dataAnterior; r.dataTexto = fmtData(ctx.dataAnterior); r.avisos.push('Data herdada da linha anterior do extrato'); }
-      else r.problemas.push('Data não identificada');
+      if (ctx.dataAnterior && ctx.herdar) { r.data = ctx.dataAnterior; r.dataTexto = fmtData(ctx.dataAnterior); r.avisos.push(ctx.dataAnterior === ctx.dataPadrao ? 'Linha sem data: usada a data informada na importação (' + fmtData(ctx.dataPadrao) + ')' : 'Data herdada da linha anterior do extrato'); r.dataInformada = ctx.dataAnterior === ctx.dataPadrao; }
+      else if (ctx.herdar) r.problemas.push('Data não identificada');
     }
     if (r.anoInferido) r.avisos.push('Ano inferido (' + r.data.slice(0, 4) + ') — sujeito à confirmação');
     // descrição
@@ -574,7 +574,7 @@ pre.raw { background: var(--surface-2); border: 1px solid var(--line-2); padding
    */
   function interpretarExtrato(texto, opts) {
     opts = opts || {};
-    const ctx = { hoje: opts.hoje || hojeISO(), ano: opts.ano || null, dataAnterior: null };
+    const ctx = { hoje: opts.hoje || hojeISO(), ano: opts.ano || null, dataAnterior: opts.dataPadrao || null, dataPadrao: opts.dataPadrao || null, herdar: opts.herdarData !== false };
     const linhas = String(texto || '').replace(/\r\n?/g, '\n').split('\n');
     const registros = [], invalidas = [], ignoradas = [];
     let cab = null, pendente = null, ult = null;
@@ -599,9 +599,9 @@ pre.raw { background: var(--surface-2); border: 1px solid var(--line-2); padding
       let r = montarRegistro(log, ctx);
       if (r.semValor) {
         const temDataCompleta = tokenizar(log.texto).some((x) => x.k === 'dataC');
-        const comeca = /^(REM|REMETENTE|DES)\s*:/i.test(up(log.texto));
+        const comeca = /^(REM|REMET|REMETENTE|DES)\s*[:.]/i.test(up(log.texto));
         if (!r.erro.startsWith('Valor em formato') && ult && !temDataCompleta && ult.continuacoes < 2 &&
-          (!ult.reg.remetente || (comeca && !/\b(REM|DES)\s*:/.test(up(ult.log.texto))))) {
+          (!ult.reg.remetente || (comeca && !/\b(REM|REMET|DES)\s*[:.]/.test(up(ult.log.texto))))) {
           // linha de continuação (ex.: "REM: NOME 27/10" abaixo de "TRANSFERENCIA PIX ... 957,34")
           ult.log = { linha: ult.log.linha, bruto: ult.log.bruto + ' | ' + log.bruto, texto: ult.log.texto + ' ' + log.texto, nat: ult.log.nat };
           ult.continuacoes++;
@@ -616,7 +616,7 @@ pre.raw { background: var(--surface-2); border: 1px solid var(--line-2); padding
       }
       if (pendente) {
         const sepAtual = separarTipo(log.texto);
-        if (!sepAtual.tipo && !/\b(REM|DES)\s*:/.test(up(log.texto)) || /^(REM|REMETENTE)\s*:/i.test(log.texto)) {
+        if (!sepAtual.tipo && !/\b(REM|REMET|DES)\s*[:.]/.test(up(log.texto)) || /^(REM|REMET|REMETENTE)\s*[:.]/i.test(log.texto)) {
           log = { linha: pendente.linha, bruto: pendente.bruto + ' | ' + log.bruto, texto: pendente.texto + ' ' + log.texto, nat: log.nat };
           pendente = null;
           r = montarRegistro(log, ctx);
@@ -630,6 +630,14 @@ pre.raw { background: var(--surface-2); border: 1px solid var(--line-2); padding
       ult = { reg: r, log, continuacoes: 0, ctxData };
     }
     flushPendente();
+    // data do depósito informada pelo usuário, linha a linha (tem prioridade sobre a data lida)
+    if (opts.datas) for (const r of registros) {
+      const d = opts.datas[r.linha];
+      if (d && /^\d{4}-\d{2}-\d{2}$/.test(d)) {
+        r.data = d; r.dataTexto = fmtData(d); r.anoInferido = false; r.dataInformada = true;
+        r.problemas = r.problemas.filter((x) => !/data/i.test(x)); r.avisos = r.avisos.filter((x) => !/^(Data|Ano|Linha sem data)/.test(x));
+      }
+    }
     return { registros, invalidas, ignoradas };
   }
 
@@ -846,6 +854,12 @@ pre.raw { background: var(--surface-2); border: 1px solid var(--line-2); padding
       ? 'Nenhuma planilha/histórico importado ainda: não há dados para comprovar a utilização.'
       : 'Nenhum registro de utilização encontrado na planilha importada (' + hist.linhas.length + ' linhas, até ' + fmtData(hist.meta && hist.meta.ultimaData) + ') nem no aplicativo.';
     return { status: 'pendente', motivo: fonte };
+  }
+
+  /** Sem aba de conferência: o que antes ia para conferência/duplicidade fica pendente, com o motivo como alerta. */
+  function simplificar(cl) {
+    if (cl.status !== 'conferencia' && cl.status !== 'duplicidade') return cl;
+    return Object.assign({}, cl, { status: 'pendente', motivo: 'Pendente de confirmação', alerta: (cl.status === 'duplicidade' ? 'Possível duplicidade: ' : 'Atenção: ') + cl.motivo });
   }
 
   function sugerirSolicitante(c, hist) {
@@ -1229,7 +1243,7 @@ pre.raw { background: var(--surface-2); border: 1px solid var(--line-2); padding
     // ---------- importação do extrato
     previaImportacao(texto, opts) {
       opts = opts || {};
-      const res = interpretarExtrato(texto, { hoje: opts.hoje || this.hoje(), ano: opts.ano || null });
+      const res = interpretarExtrato(texto, { hoje: opts.hoje || this.hoje(), ano: opts.ano || null, dataPadrao: opts.dataPadrao || null, herdarData: opts.herdarData, datas: opts.datas || null });
       const existentes = new Map(); const porRefExist = new Map(); const usadosPrevia = new Set();
       for (const c of this.creditos.todos()) { existentes.set(c.fp, c); const nr = normRef(c.referencia); if (nr) { if (!porRefExist.has(nr)) porRefExist.set(nr, []); porRefExist.get(nr).push(c); } }
       const ocorr = new Map(); const porChave = new Map();
@@ -1249,10 +1263,10 @@ pre.raw { background: var(--surface-2); border: 1px solid var(--line-2); padding
         if (ex) { usadosPrevia.add(ex.id); itens.push({ reg: r, acao: 'existente', existente: ex.id, status: ex.status, motivo: 'Já importado em ' + fmtData(ex.criadoEm && ex.criadoEm.slice(0, 10)) + ' (importação repetida — não será duplicado)' }); continue; }
         if (porChave.get(r.chave) > 1) r._dupLote = normRef(r.referencia) ? 'A mesma referência (' + r.referencia + '), valor e data aparecem ' + porChave.get(r.chave) + ' vezes neste extrato' : 'Há ' + porChave.get(r.chave) + ' movimentações idênticas (mesmo valor, data e descrição, sem código) neste extrato: podem ser legítimas ou colagem repetida';
         const prov = Object.assign({ id: 'tmp' + itens.length }, r);
-        const cl = classificar(prov, { hist: this.hist, regras: this.config.regras, vinculadas: vinc, outros: outros.concat(itens.filter((x) => x.acao === 'novo').map((x) => x.prov)) });
+        const cl = simplificar(classificar(prov, { hist: this.hist, regras: this.config.regras, vinculadas: vinc, outros: outros.concat(itens.filter((x) => x.acao === 'novo').map((x) => x.prov)) }));
         prov.status = cl.status;
         if (cl.evidencia && cl.evidencia.chave) vinc.set(cl.evidencia.chave, prov.id);
-        itens.push({ reg: r, prov, acao: 'novo', status: cl.status, motivo: cl.motivo, evidencia: cl.evidencia || null, candidatas: cl.candidatas || null, dupDe: cl.dupDe || null });
+        itens.push({ reg: r, prov, acao: 'novo', status: cl.status, motivo: cl.motivo, alerta: cl.alerta || null, evidencia: cl.evidencia || null, candidatas: cl.candidatas || null, dupDe: cl.dupDe || null });
       }
       const resumo = { novos: 0, existentes: 0, invalidas: res.invalidas.length, ignoradas: res.ignoradas.length, porStatus: {}, valorNovos: 0 };
       for (const it of itens) {
@@ -1277,7 +1291,7 @@ pre.raw { background: var(--surface-2); border: 1px solid var(--line-2); padding
             tipo: r.tipo, remetente: r.remetente, data: r.data, dataTexto: r.dataTexto, dataOperacao: r.dataOperacao, anoInferido: r.anoInferido,
             referencia: r.referencia, valor: r.valor, saldo: r.saldo, natureza: r.natureza,
             avisos: r.avisos, problemas: r.problemas,
-            status: it.status, motivo: it.motivo, evidencia: it.evidencia, candidatas: it.candidatas, dupDe: it.dupDe ? (this.creditos.get(it.dupDe) ? it.dupDe : null) : null,
+            status: it.status, motivo: it.motivo, alerta: it.alerta || null, evidencia: it.evidencia, candidatas: it.candidatas, dupDe: it.dupDe ? (this.creditos.get(it.dupDe) ? it.dupDe : null) : null,
             lancamento: null, decisaoManual: false, exportacoes: [],
             criadoEm: ts, atualizadoEm: ts, rev: 0, uid: this.usuario.id || null,
           };
@@ -1404,10 +1418,10 @@ pre.raw { background: var(--surface-2); border: 1px solid var(--line-2); padding
       const alvo = this.creditos.todos().filter((c) => !c.decisaoManual && ['pendente', 'conferencia', 'duplicidade'].includes(c.status) && !c.lancamento?.confirmadoEm).sort((a, b) => (a.criadoEm < b.criadoEm ? -1 : 1));
       for (const c0 of alvo) {
         const c = clone(c0);
-        const cl = classificar(c, { hist: this.hist, regras: this.config.regras, vinculadas: vinc, outros });
-        if (cl.status === c.status && cl.motivo === c.motivo) continue;
+        const cl = simplificar(classificar(c, { hist: this.hist, regras: this.config.regras, vinculadas: vinc, outros }));
+        if (cl.status === c.status && cl.motivo === c.motivo && (cl.alerta || null) === (c.alerta || null)) continue;
         const de = c.status;
-        c.status = cl.status; c.motivo = cl.motivo; c.evidencia = cl.evidencia || null; c.candidatas = cl.candidatas || null; if (cl.dupDe) c.dupDe = cl.dupDe;
+        c.status = cl.status; c.motivo = cl.motivo; c.alerta = cl.alerta || null; c.evidencia = cl.evidencia || null; c.candidatas = cl.candidatas || null; if (cl.dupDe) c.dupDe = cl.dupDe;
         if (cl.evidencia) { vinc.set(cl.evidencia.chave, c.id); if (cl.status === 'lancado' || cl.status === 'utilizado') c.lancamento = this._lancamentoInicial(c, cl.evidencia); }
         this._salvarCredito(c);
         this._evento({ tipo: 'status', creditoId: c.id, de, para: c.status, motivo: motivoBase + ': ' + c.motivo, automatico: true, detalhe: cl.evidencia ? { evidencia: cl.evidencia.descricao } : null });
@@ -1416,6 +1430,21 @@ pre.raw { background: var(--surface-2); border: 1px solid var(--line-2); padding
       return alterados.length;
     }
     reprocessar() { return this.transacao(async () => this._reprocessar('Reclassificação solicitada')); }
+    /** Move para os pendentes (com alerta) os créditos que estavam em conferência ou duplicidade. */
+    migrarConferencias() {
+      const alvo = this.creditos.todos().filter((c) => c.status === 'conferencia' || c.status === 'duplicidade');
+      if (!alvo.length) return Promise.resolve(0);
+      return this.transacao(async () => {
+        for (const c0 of alvo) {
+          const c = clone(c0); const de = c.status;
+          c.alerta = (de === 'duplicidade' ? 'Possível duplicidade: ' : 'Atenção: ') + (c.motivo || '');
+          c.status = 'pendente'; c.motivo = 'Pendente de confirmação';
+          this._salvarCredito(c);
+          this._evento({ tipo: 'status', creditoId: c.id, de, para: 'pendente', motivo: 'Aba de conferências removida: crédito movido para os pendentes com alerta', automatico: true });
+        }
+        return alvo.length;
+      });
+    }
 
     // ---------- edição e status
     editar(id, patch, motivo) {
@@ -1501,7 +1530,7 @@ pre.raw { background: var(--surface-2); border: 1px solid var(--line-2); padding
           if (falt.length) throw new Error('Faltam campos obrigatórios para ' + (c.remetente || 'crédito') + ' (' + formatBRL(c.valor) + '): ' + falt.join(', '));
           const de = c.status;
           c.status = 'lancado';
-          c.lancamento.confirmadoEm = this.ts(); c.lancamento.confirmadoPor = this.usuario.rotulo || ''; c.decisaoManual = true;
+          c.lancamento.confirmadoEm = this.ts(); c.lancamento.confirmadoPor = this.usuario.rotulo || ''; c.decisaoManual = true; c.alerta = null;
           c.motivo = 'Conferido e lançado no aplicativo; aguardando utilização' + (c.lancamento.protocolo ? ' (protocolo ' + c.lancamento.protocolo + ')' : '');
           c.evidencia = c.evidencia && c.evidencia.fonte === 'planilha' ? c.evidencia : { fonte: 'app', descricao: 'Lançamento confirmado no aplicativo em ' + fmtData(this.hoje()) + ' por ' + (this.usuario.rotulo || 'usuário') + (c.lancamento.protocolo ? ', protocolo ' + c.lancamento.protocolo : ''), protocolo: c.lancamento.protocolo || null };
           this._salvarCredito(c);
@@ -1746,7 +1775,7 @@ pre.raw { background: var(--surface-2); border: 1px solid var(--line-2); padding
 
   const Core = {
     APP_NOME, APP_VERSAO, BACKUP_FORMATO, BACKUP_VERSAO, STATUS, CAMPOS, ROTULO_EVENTO,
-    corDaCelula, statusDaCor, nomeCor, descEvidencia, chaveLinhaPlanilha,
+    simplificar, corDaCelula, statusDaCor, nomeCor, descEvidencia, chaveLinhaPlanilha,
     util: { norm, up, normRef, similaridade, parseMoneyBR, formatBRL, parseDateBR, excelSerialToISO, fmtData, hojeISO, diasEntre, uid, estavel, sha256, sha256js, clone },
     interpretarExtrato, celulasParaTexto, ofxParaTexto, extrairIdentificacao, lerPlanilha, indexarHistorico, chaveCredito, classificar, identificacaoPadrao, autoMapear,
     configPadrao, mesclarConfig, valorCampo, linhasPlanilha, paraCSV, tabelaCreditos, tabelaEventos, gerarXLSX,
@@ -1782,7 +1811,6 @@ pre.raw { background: var(--surface-2); border: 1px solid var(--line-2); padding
     ['importar', 'Importar movimentações'],
     ['aguardando', 'Aguardando utilização'],
     ['pendentes', 'Pendentes de confirmação'],
-    ['conferencias', 'Conferências e duplicidades'],
     ['conciliados', 'Utilizados / conciliados'],
     ['creditos', 'Todos os créditos'],
     ['grp', 'Controle'],
@@ -1968,7 +1996,7 @@ pre.raw { background: var(--surface-2); border: 1px solid var(--line-2); padding
   }
   const COL = {
     data: { id: 'data', rot: 'Data', val: (c) => c.data || '', html: (c) => '<span class="num">' + (c.data ? dt(c.data) : '<span class="tag err">sem data</span>') + '</span>' + (c.anoInferido ? ' <span class="tag" title="Ano inferido automaticamente; confirme nos detalhes">ano?</span>' : '') },
-    rem: { id: 'rem', rot: 'Remetente', val: (c) => U.norm(c.remetente), html: (c) => '<div class="rem">' + esc(c.remetente || '—') + '</div><div class="small muted">' + esc(c.tipo || '') + '</div>' },
+    rem: { id: 'rem', rot: 'Remetente', val: (c) => U.norm(c.remetente), html: (c) => '<div class="rem">' + esc(c.remetente || '—') + '</div><div class="small muted">' + esc(c.tipo || '') + '</div>' + (c.alerta && c.status === 'pendente' ? '<div class="tag err" style="white-space:normal;margin-top:3px">' + esc(c.alerta) + '</div>' : '') },
     ref: { id: 'ref', rot: 'Código', val: (c) => c.referencia || '', html: (c) => (c.referencia ? '<span class="num">' + esc(c.referencia) + '</span>' : '<span class="tag err">sem código</span>') },
     valor: { id: 'valor', rot: 'Valor', cls: 'r', val: (c) => c.valor, html: (c) => '<span class="num">' + brl(c.valor) + '</span>' },
     status: { id: 'status', rot: 'Situação', val: (c) => c.status, html: (c) => pill(c.status) + (c._orfao ? ' <span class="tag err">importação interrompida</span>' : '') },
@@ -2013,7 +2041,7 @@ pre.raw { background: var(--surface-2); border: 1px solid var(--line-2); padding
   function avisosGerais() {
     let h = '';
     const orf = repo.orfaos().filter((c) => c.status !== 'cancelado');
-    if (orf.length) h += '<div class="alerta err"><span><b>' + orf.length + ' crédito(s) de uma importação interrompida.</b> A gravação foi cortada antes de concluir o lote. Confira em Conferências ou descarte-os.</span><span class="row"><a class="btn sm" href="#conferencias">Conferir</a><button class="btn sm" data-act="descartar-orfaos">Descartar</button></span></div>';
+    if (orf.length) h += '<div class="alerta err"><span><b>' + orf.length + ' crédito(s) de uma importação interrompida.</b> A gravação foi cortada antes de concluir o lote. Confira em Conferências ou descarte-os.</span><span class="row"><a class="btn sm" href="#pendentes">Ver pendentes</a><button class="btn sm" data-act="descartar-orfaos">Descartar</button></span></div>';
     if (!repo.usuario.rotulo) h += '<div class="alerta"><span>Informe seu nome em Configurações para que o histórico registre quem fez cada alteração.</span><a class="btn sm" href="#config">Configurações</a></div>';
     if (podeEscrever === false) h += '<div class="alerta">Você está com acesso somente leitura: pode consultar e exportar, mas não alterar.</div>';
     const ub = repo.config.ultimoBackup; const dias = ub ? Math.floor((Date.now() - new Date(ub.em).getTime()) / 86400000) : null;
@@ -2085,7 +2113,7 @@ pre.raw { background: var(--surface-2); border: 1px solid var(--line-2); padding
       '<div class="drop" id="imp-drop">Arraste um arquivo aqui ou <label style="color:var(--focus);cursor:pointer;text-decoration:underline">escolha um arquivo<input id="imp-arq" type="file" accept=".csv,.txt,.xlsx,.xls,.ofx,.ods" hidden data-act-change="arquivo-extrato"></label> · CSV, Excel, OFX ou TXT' + (ui.previaMeta && ui.previaMeta.arquivo ? '<div class="small" style="margin-top:6px">Arquivo carregado: <b>' + esc(ui.previaMeta.arquivo) + '</b></div>' : '') + '</div>' +
       '<div class="row" style="justify-content:space-between"><div class="row"><label class="f" style="width:150px">Ano para datas sem ano<input id="imp-ano" type="number" min="2000" max="2100" value="' + anoPadrao + '"></label><label class="row small" style="margin-top:16px"><input id="imp-anoconf" type="checkbox"' + (ui.impAnoConf ? ' checked' : '') + '> Confirmo este ano para as datas "dd/mm"</label></div>' +
       '<div class="row"><button class="btn" data-act="imp-limpar">Limpar</button><button class="btn pri" data-act="imp-analisar">Analisar movimentações</button></div></div>' +
-      '<p class="hint" style="margin:0">Sem a confirmação, o ano é inferido pela data de hoje e o crédito fica marcado com <span class="tag">ano?</span> até você confirmar. Débitos, saldos e cabeçalhos do extrato são separados automaticamente.</p></div></div>';
+      '<p class="hint" style="margin:0">Depois de analisar, informe a <b>data do depósito</b> de cada lançamento na coluna Data. Quando a linha traz a data, ela já vem preenchida para você conferir. A importação só é liberada com todas as datas preenchidas. Débitos, saldos e cabeçalhos do extrato são separados automaticamente.</p></div></div>';
     const p = ui.previa;
     if (p) {
       const r = p.resumo;
@@ -2093,12 +2121,14 @@ pre.raw { background: var(--surface-2); border: 1px solid var(--line-2); padding
       h += '<div class="body row">' + Object.entries(r.porStatus).map(([k, n]) => pill(k) + ' <span class="num">' + n + '</span>').join(' &nbsp; ') + '</div>';
       const itens = p.itens.map((it, i) => Object.assign({ id: 'p' + i, _it: it }, it.reg, { status: it.acao === 'existente' ? 'existente' : it.status, motivo: it.motivo }));
       const colRes = { id: 'res', rot: 'Classificação', val: (c) => c.status, html: (c) => (c.status === 'existente' ? '<span class="pill st-existente">Já consta</span> ' + pill(c._it.status) : pill(c.status)) };
-      const colMot = { id: 'mot', rot: 'Motivo', html: (c) => '<div class="motivo">' + esc(c.motivo) + '</div>' + (c.avisos && c.avisos.length ? '<div class="small" style="margin-top:3px">' + c.avisos.map((a) => '<span class="tag">' + esc(a) + '</span>').join(' ') + '</div>' : '') };
+      const colMot = { id: 'mot', rot: 'Motivo', html: (c) => '<div class="motivo">' + esc(c.motivo) + '</div>' + (c._it && c._it.alerta ? '<div class="tag err" style="white-space:normal;margin-top:3px">' + esc(c._it.alerta) + '</div>' : '') + (c.avisos && c.avisos.length ? '<div class="small" style="margin-top:3px">' + c.avisos.map((a) => '<span class="tag">' + esc(a) + '</span>').join(' ') + '</div>' : '') };
       const colLin = { id: 'lin', rot: 'Linha', val: (c) => c.linha, html: (c) => '<span class="num muted">' + c.linha + '</span>' };
-      h += tabela('previa', itens, [colLin, COL.data, COL.rem, COL.ref, COL.valor, colRes, colMot], { sort: { col: 'lin', dir: 1 }, tam: 200 });
+      const colData = { id: 'data', rot: 'Data do depósito', val: (c) => c.data || '', html: (c) => (c.status === 'existente' ? '<span class="num">' + esc(dt(c.data)) + '</span>' : '<input type="date" id="imp-dt-' + c.linha + '" data-impdata="' + c.linha + '" value="' + esc(c.data || '') + '" style="' + (c.data ? '' : 'border-color:var(--danger);') + 'min-width:140px"' + ' aria-label="Data do depósito">' + (c.data ? '' : '<div class="small" style="color:var(--danger)">informe a data</div>')) };
+      h += tabela('previa', itens, [colLin, colData, COL.rem, COL.ref, COL.valor, colRes, colMot], { sort: { col: 'lin', dir: 1 }, tam: 200 });
       if (p.invalidas.length) h += '<div class="body"><h2 style="font-size:14px;margin:0 0 8px">Linhas inválidas ou incompletas (não serão importadas)</h2><div class="tw"><table class="t"><thead><tr><th>Linha</th><th>Conteúdo</th><th>Problema</th></tr></thead><tbody>' + p.invalidas.map((x) => '<tr><td class="num">' + x.linha + '</td><td class="mono">' + esc(x.bruto) + '</td><td><span class="tag err">' + esc(x.motivo) + '</span></td></tr>').join('') + '</tbody></table></div><p class="hint">Corrija essas linhas no texto acima e analise de novo, ou lance-as manualmente depois.</p></div>';
       if (p.ignoradas.length) h += '<details class="body"><summary class="small">' + p.ignoradas.length + ' linha(s) ignorada(s): débitos, saldos e cabeçalhos</summary><div class="tw" style="margin-top:8px"><table class="t"><tbody>' + p.ignoradas.slice(0, 300).map((x) => '<tr><td class="num">' + x.linha + '</td><td class="mono">' + esc(x.bruto) + '</td><td class="small muted">' + esc(x.motivo) + '</td></tr>').join('') + '</tbody></table></div></details>';
-      h += '<div class="pag" style="border-top:1px solid var(--line-2)"><span>' + (r.novos ? 'Os créditos novos serão gravados com a classificação acima. Você poderá revisar cada um depois.' : 'Não há créditos novos para importar.') + '</span><button class="btn pri" data-act="imp-confirmar"' + (r.novos ? '' : ' disabled') + '>Importar ' + r.novos + ' crédito(s)</button></div></div>';
+      const faltaData = p.itens.filter((it) => it.acao === 'novo' && !it.reg.data).length;
+      h += '<div class="pag" style="border-top:1px solid var(--line-2)"><span>' + (faltaData ? '<b style="color:var(--danger)">Preencha a data do depósito de ' + faltaData + ' lançamento(s) para liberar a importação.</b>' : r.novos ? 'Os créditos novos serão gravados com a classificação acima. Você poderá revisar cada um depois.' : 'Não há créditos novos para importar.') + '</span><button class="btn pri" data-act="imp-confirmar"' + (r.novos && !faltaData ? '' : ' disabled') + '>Importar ' + r.novos + ' crédito(s)</button></div></div>';
     } else {
       h += '<div class="panel" style="margin-top:14px"><header><h2>Formatos aceitos</h2></header><div class="body doc small"><ul style="margin:0;padding-left:18px">' +
         '<li>Linha única do extrato: <code>PIX RECEBIDO REM: GIRO PAGAMENTOS E TEC 27/10 722472 957,34</code></li>' +
@@ -2590,25 +2620,28 @@ pre.raw { background: var(--surface-2); border: 1px solid var(--line-2); padding
     'ver-lote': (b) => { ui.filtros.creditos = { lote: b.dataset.id }; location.hash = 'creditos'; },
     'ver-invalidas': (b) => { const l = repo.lotes.get(b.dataset.id); modal({ titulo: 'Linhas inválidas do lote', corpo: '<div class="tw"><table class="t"><tbody>' + l.invalidas.map((x) => '<tr><td class="num">' + x.linha + '</td><td class="mono">' + esc(x.bruto) + '</td><td class="small">' + esc(x.motivo) + '</td></tr>').join('') + '</tbody></table></div>', botoes: [{ rot: 'Fechar', v: 'cancel' }], lg: true }); },
     // importação
-    'imp-limpar': () => { ui.impTxt = ''; ui.previa = null; ui.previaMeta = null; render(); },
+    'imp-limpar': () => { ui.impDatas = {}; ui.impDatasTxt = null; ui.impTxt = ''; ui.previa = null; ui.previaMeta = null; render(); },
     'imp-analisar': () => {
       ui.impTxt = document.getElementById('imp-txt').value;
       const ano = parseInt(document.getElementById('imp-ano').value, 10); ui.impAno = ano;
       ui.impAnoConf = document.getElementById('imp-anoconf').checked;
       if (!ui.impTxt.trim()) { toast('Cole as linhas do extrato ou escolha um arquivo.', true); return; }
       const texto = ui.previaMeta && ui.previaMeta.textoArquivo && ui.previaMeta.textoArquivo === ui.impTxt ? ui.impTxt : ui.impTxt;
-      ui.previa = repo.previaImportacao(texto, { ano: ui.impAnoConf && ano ? ano : null });
+      if (ui.impDatasTxt !== texto) { ui.impDatas = {}; ui.impDatasTxt = texto; }
+      ui.previaOpts = { ano: ui.impAnoConf && ano ? ano : null, herdarData: false };
+      ui.previa = repo.previaImportacao(texto, Object.assign({ datas: ui.impDatas }, ui.previaOpts));
       render();
     },
     'imp-confirmar': async () => {
       const p = ui.previa; if (!p) return;
+      if (p.itens.some((it) => it.acao === 'novo' && !it.reg.data)) { toast('Preencha a data do depósito de todos os lançamentos.', true); return; }
       const r = await modal({ titulo: 'Importar créditos', ok: 'Importar ' + p.resumo.novos, corpo: '<p style="margin:0">Serão gravados <b>' + p.resumo.novos + '</b> crédito(s) novo(s), total <b class="num">' + brl(p.resumo.valorNovos) + '</b>. ' + p.resumo.existentes + ' já existente(s) e ' + p.resumo.invalidas + ' linha(s) inválida(s) ficam de fora.</p>' + (p.opts.ano ? '' : '<div class="alerta" style="margin:0">Datas sem ano receberão o ano inferido e ficarão marcadas para confirmação.</div>') });
       if (!r) return;
       const meta = Object.assign({ origem: ui.previaMeta ? 'arquivo' : 'colagem' }, ui.previaMeta || {});
       try { meta.hash = await U.sha256(ui.impTxt); } catch (e) { /* sem hash */ }
       meta.linhasTotal = ui.impTxt.split('\n').length; delete meta.textoArquivo;
       const lote = await agir(() => repo.importar(p, meta), (l) => l.novos + ' crédito(s) importado(s).');
-      if (lote) { ui.previa = null; ui.impTxt = ''; ui.previaMeta = null; location.hash = (lote.porStatus.conferencia || lote.porStatus.duplicidade) ? 'conferencias' : 'pendentes'; }
+      if (lote) { ui.previa = null; ui.impTxt = ''; ui.previaMeta = null; location.hash = 'pendentes'; }
     },
     // planilha
     'pl-reler': () => { lerPlanilhaSelecionada(); render(); },
@@ -2703,6 +2736,12 @@ pre.raw { background: var(--surface-2); border: 1px solid var(--line-2); padding
       const id = t.dataset.id, campo = t.dataset.ed; let v = t.value.trim(); if (campo === 'solicitante') v = v.toUpperCase();
       const c = repo.creditos.get(id); if (!c || ((c.lancamento && c.lancamento[campo]) || '') === v) return;
       await agir(() => repo.editar(id, { ['lancamento.' + campo]: v }, c.status === 'pendente' ? 'Preenchimento para lançamento' : (campo === 'protocolo' ? 'Protocolo incluído após a conferência' : 'Campo alterado após a conferência')), campo === 'protocolo' && c.status !== 'pendente' ? 'Protocolo ' + (v || '(vazio)') + ' salvo. O crédito continua aguardando utilização.' : null);
+      return;
+    }
+    if (t.dataset.impdata) {
+      ui.impDatas = ui.impDatas || {}; if (t.value) ui.impDatas[t.dataset.impdata] = t.value; else delete ui.impDatas[t.dataset.impdata];
+      ui.previa = repo.previaImportacao(ui.impDatasTxt || ui.impTxt, Object.assign({ datas: ui.impDatas }, ui.previaOpts || { herdarData: false }));
+      render(); const prox = Array.from(document.querySelectorAll('[data-impdata]')).find((x) => !x.value); if (prox) prox.focus();
       return;
     }
     const a = t.dataset.actChange;
@@ -2805,6 +2844,7 @@ pre.raw { background: var(--surface-2); border: 1px solid var(--line-2); padding
     const onErr = (e) => console.warn('assinatura', e && e.code);
     if (store.assinarDoc) ['config', 'planilha', 'indice'].forEach((id) => store.assinarDoc('meta', id, (d) => aoMeta(id, d), onErr));
     else if (store.assinar) store.assinar('meta', (docs) => docs.forEach((d) => aoMeta(d.id, d.data)), onErr);
+    if (podeEscrever !== false && repo.creditos.todos().some((c) => c.status === 'conferencia' || c.status === 'duplicidade')) { try { await repo.migrarConferencias(); } catch (e) { console.warn('migração', e); } }
     rotear();
     return true;
   }
