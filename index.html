@@ -37,6 +37,7 @@
   --dup-bg: #2b1f45; --dup-fg: #c9b1f5; --conf-bg: #3f1b16; --conf-fg: #f3a597; --arq-bg: #252d3d; --arq-fg: #aab2c3;
   --danger: #f08a78; --ok: #7fd3a0; --shadow: 0 1px 2px rgba(0,0,0,.3); color-scheme: dark; }
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 html, body { height: 100%; }
 body { background: var(--bg); color: var(--ink); font-family: var(--f-ui); font-size: 14px; line-height: 1.45; margin: 0; }
 body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 30; background: var(--navy); }
@@ -2290,6 +2291,7 @@ pre.raw { background: var(--surface-2); border: 1px solid var(--line-2); padding
       '<div class="row" style="justify-content:space-between"><span>Todos os créditos, com todas as colunas do sistema</span><span class="row"><button class="btn sm" data-act="exp-todos" data-fmt="csv">CSV</button><button class="btn sm gold" data-act="exp-todos" data-fmt="xlsx">Excel</button></span></div>' +
       '<div class="row" style="justify-content:space-between"><span>Histórico de alterações e eventos</span><span class="row"><button class="btn sm" data-act="exp-eventos" data-fmt="csv">CSV</button><button class="btn sm gold" data-act="exp-eventos" data-fmt="xlsx">Excel</button></span></div>' +
       '<div class="row" style="justify-content:space-between"><span>Planilha FIN - 00 completa atualizada (histórico importado + lançamentos confirmados no app)</span><span class="row"><button class="btn sm gold" data-act="exp-planilha-completa">Excel</button></span></div>' +
+      '<div class="stack" style="gap:6px;border:1px solid var(--gold);border-radius:6px;padding:10px;background:var(--gold-soft)"><b>Controle de Depósito para o extrato comentado</b><span>Mesmo layout da FIN - 00 (IDENTIFICAÇÃO na coluna C, PROTOCOLO na coluna E, linhas utilizadas pintadas). Escolha um período ou exporte a planilha toda, com todo o histórico e os lançamentos feitos no app.</span><div class="row" style="align-items:end"><label class="f">De<input type="date" id="pm-de"></label><label class="f">Até<input type="date" id="pm-ate"></label><button class="btn sm gold" data-act="exp-mes">Gerar Excel do período</button><span class="muted">ou</span><button class="btn sm pri" data-act="exp-planilha-completa">Exportar a planilha toda</button></div></div>' +
       '<div class="row" style="justify-content:space-between"><span>Configurações e mapeamento da planilha</span><span class="row"><button class="btn sm" data-act="exp-config">JSON</button></span></div>' +
       '<p class="hint" style="margin:0">Exportar para Excel ou CSV não substitui o backup completo: esses arquivos não guardam o histórico de cada crédito nem permitem restauração.</p></div></div></div>';
     const R = ui.restauracao;
@@ -2432,7 +2434,9 @@ pre.raw { background: var(--surface-2); border: 1px solid var(--line-2); padding
   }
 
   function marcarUtilizado(id) {
-    const c = repo.creditos.get(id);
+    const c = U.clone(repo.creditos.get(id));
+    const inl = document.getElementById('ed-protocolo-' + id);
+    if (inl && inl.value.trim()) { c.lancamento = Object.assign({}, c.lancamento, { protocolo: inl.value.trim() }); }
     modal({
       titulo: 'Marcar como utilizado', ok: 'Marcar como utilizado',
       corpo: '<p style="margin:0">' + esc(c.remetente) + ' · <b class="num">' + brl(c.valor) + '</b> · ' + dt(c.data) + '</p><label class="f">N.º do protocolo / referência correspondente (obrigatório)<input type="text" name="protocolo" value="' + esc(c.lancamento && c.lancamento.protocolo || '') + '"></label><label class="f">Solicitante<input type="text" name="solicitante" list="dl-solic" value="' + esc(c.lancamento && c.lancamento.solicitante || '') + '"></label><label class="f">Observação (opcional)<input type="text" name="obs"></label>' + datalistSolic(),
@@ -2476,9 +2480,9 @@ pre.raw { background: var(--surface-2); border: 1px solid var(--line-2); padding
     const cfg = repo.config.planilha; const cols = cfg.colunas;
     const hist = repo.planilha.todos().sort((a, b) => a.n - b.n);
     const vh = (l, campo) => { switch (campo) { case 'dataDeposito': return l.d || l.dt || ''; case 'identificacao': return l.i; case 'valor': return l.v != null ? l.v : l.vt || ''; case 'protocolo': return l.p; case 'solicitante': return l.s; case 'dataConferencia': return l.dc || ''; case 'conferente': return l.c; case 'comentario': return l.o; case 'remetente': return C.extrairIdentificacao(l.i).remetente; case 'referencia': return C.extrairIdentificacao(l.i).referencia || ''; default: return ''; } };
-    const linhas = hist.map((l) => cols.map((c) => vh(l, c.campo)));
     const porChave = new Map(); for (const c of repo.creditos.todos()) if (c.evidencia && c.evidencia.chave) porChave.set(c.evidencia.chave, c);
-    const idx = C.indexarHistorico(hist);
+    const ATUAIS = new Set(['protocolo', 'solicitante', 'comentario', 'conferente', 'dataConferencia']);
+    const linhas = hist.map((l) => { const cr = porChave.get(C.chaveLinhaPlanilha(l)); return cols.map((c) => (cr && ATUAIS.has(c.campo) ? C.valorCampo(cr, c.campo, repo.config) || vh(l, c.campo) : vh(l, c.campo))); });
     const cores = hist.map((l) => { const c = porChave.get(C.chaveLinhaPlanilha(l)); return l.f || (c && c.status === 'utilizado' ? '595959' : ''); });
     const novos = repo.creditos.todos().filter((c) => (c.status === 'lancado' || c.status === 'utilizado') && c.evidencia && c.evidencia.fonte !== 'planilha').sort((a, b) => ((a.lancamento && a.lancamento.confirmadoEm || '') < (b.lancamento && b.lancamento.confirmadoEm || '') ? -1 : 1));
     const lp = C.linhasPlanilha(novos, repo.config, { hoje: repo.hoje() });
@@ -2647,6 +2651,12 @@ pre.raw { background: var(--surface-2); border: 1px solid var(--line-2); padding
     'exp-sel': (b) => agir(() => exportarPlanilha(Array.from(ui.sel).map((id) => repo.creditos.get(id)).filter(Boolean), b.dataset.fmt, 'selecionados')),
     'exp-novos': (b) => agir(() => exportarPlanilha(repo.creditos.todos().filter((c) => (c.status === 'lancado' || c.status === 'utilizado') && c.evidencia && c.evidencia.fonte !== 'planilha' && !(c.exportacoes && c.exportacoes.length)), b.dataset.fmt, 'novos lancamentos')),
     'exp-planilha-completa': () => agir(() => exportarPlanilhaCompleta()),
+    'exp-mes': () => {
+      const de = document.getElementById('pm-de').value, ate = document.getElementById('pm-ate').value;
+      if (!de || !ate) { toast('Informe as datas de início e fim do período.', true); return; }
+      const cs = repo.creditos.todos().filter((c) => (c.status === 'lancado' || c.status === 'utilizado') && c.data && c.data >= de && c.data <= ate);
+      agir(() => exportarPlanilha(cs, 'xlsx', 'periodo ' + dt(de).replace(/\//g, '-') + ' a ' + dt(ate).replace(/\//g, '-')));
+    },
     // configurações
     'salvar-config': () => {
       const g = (id) => document.getElementById(id);
