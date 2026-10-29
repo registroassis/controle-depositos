@@ -1,0 +1,24 @@
+rules_version = '2';
+// Regras do Controle de Depósitos – RI Assis
+// Só usuários cadastrados e ativos em /usuarios leem e gravam os dados.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function logado() { return request.auth != null; }
+    function temPerfil() { return logado() && exists(/databases/$(database)/documents/usuarios/$(request.auth.uid)); }
+    function perfil() { return get(/databases/$(database)/documents/usuarios/$(request.auth.uid)).data; }
+    function ativo() { return temPerfil() && perfil().ativo == true; }
+    function admin() { return ativo() && perfil().papel == 'admin'; }
+    // e-mail da administradora (o mesmo de firebase-config.js)
+    function emailAdmin() { return logado() && request.auth.token.email == 'financeiro@registroassis.com.br'; }
+
+    match /usuarios/{uid} {
+      allow read: if ativo() || (logado() && request.auth.uid == uid);
+      allow create: if admin() || (emailAdmin() && request.auth.uid == uid && request.resource.data.papel == 'admin');
+      allow update: if admin();
+      allow delete: if false;
+    }
+    match /{colecao}/{doc} {
+      allow read, write: if ativo() && colecao in ['creditos', 'eventos', 'lotes', 'planilha', 'meta'];
+    }
+  }
+}
